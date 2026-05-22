@@ -1,0 +1,60 @@
+exemplo de payload
+
+```json
+{
+    "id": "UUID",
+    "nome_completo": "String",
+    "cpf": "String",
+    "celular": "String",
+    "data_nascimento":"String",
+    "observacao": "String",
+    "identificacao_familiar":[
+        {
+            "nome_completo": "String",
+            "parentesco": "String",
+            "data_nascimento": "String",
+            "ocupacao_escola": "String"
+        }
+    ],
+    "renda": {
+        "renda_bruta": "Float",
+        "fontes_renda": {
+            "formal": "Boolean",
+            "informal": "Boolean",
+            "pensao": "Boolean",
+            "bpc": "Boolean",
+            "outros": "String"
+        }
+    },
+    "moradia": {
+        "endereco":{
+            "cep": "String",
+            "logradouro": "String",
+            "numero": "Integer",
+            "bairro": "String",
+            "localidade": "String",
+            "uf": "String"
+        },
+        "tipo": "String",
+        "numero_comodos": "Integer",
+        "material": "String",
+        "servicos":{
+            "agua": "Boolean",
+            "esgoto": "Boolean",
+            "lixo": "Boolean",
+            "eletricidade": "Boolean"
+        }
+    },
+    "educacao_bens": {
+        "escolaridade_responsavel": "String",
+        "qtd_estudantes": "Integer",
+        "bens": {
+            "geladeira": "Boolean",
+            "maquina_lavar": "Boolean",
+            "computador": "Boolean",
+            "carro": "Boolean",
+            "motocicleta": "Boolean"
+        }
+    }
+}
+```
