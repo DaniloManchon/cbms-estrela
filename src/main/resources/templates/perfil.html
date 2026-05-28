@@ -1,64 +1,164 @@
 <!DOCTYPE html>
 <html xmlns:th="http://www.thymeleaf.org">
-<head>
-    <meta charset="UTF-8">
-    <title>Perfil do Responsável - CBMS</title>
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css">
-    <style>
-        body { padding: 20px; background-color: #f8f9fa; }
-        .container { max-width: 800px; background: white; padding: 30px; border-radius: 10px; box-shadow: 0 0 10px rgba(0,0,0,0.1); }
-        .card { margin-bottom: 20px; border: none; box-shadow: 0 2px 5px rgba(0,0,0,0.05); }
-        .badge-count { font-size: 1.2rem; }
-    </style>
-</head>
+<head th:replace="~{fragments :: head('Perfil do Responsável')}"></head>
 <body>
-<div class="container">
+<div class="container-main">
+    <div th:replace="~{fragments :: alerts}"></div>
+    
+    <!-- Header -->
     <div class="d-flex justify-content-between align-items-start mb-4">
         <div>
             <h2 th:text="${responsavel.nomeCompleto}">Nome do Responsável</h2>
-            <p class="text-muted">CPF: <span th:text="${responsavel.cpf}"></span></p>
+            <p class="text-muted mb-0">CPF: <span th:text="${responsavel.cpf}"></span> | Celular: <span th:text="${responsavel.celular}"></span></p>
         </div>
         <div class="text-end">
-            <span class="badge bg-primary badge-count" th:text="${responsavel.coletas.size() + ' Cestas'}"></span>
+            <a th:href="@{/editar/{id}(id=${responsavel.id})}" class="btn btn-outline-primary mb-2">
+                <i class="bi bi-pencil"></i> Editar Cadastro
+            </a><br>
+            <span class="badge bg-primary fs-6" th:text="${responsavel.coletas.size() + ' Cestas'}"></span>
         </div>
     </div>
 
-    <div class="card p-3 bg-light">
-        <h5>Informações de Contato</h5>
-        <div class="row">
-            <div class="col-md-6">
-                <strong>Celular:</strong> <span th:text="${responsavel.celular != null ? responsavel.celular : 'Não informado'}"></span>
+    <!-- Main Content Tabs/Sections -->
+    <div class="row">
+        <!-- Left Column: Personal and Family -->
+        <div class="col-md-7">
+            <div class="card">
+                <div class="card-header"><i class="bi bi-person-fill"></i> Dados Pessoais</div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-6 mb-2">
+                            <label class="text-muted small d-block">Data de Nascimento</label>
+                            <span class="fw-medium" th:text="${responsavel.dataNascimento != null ? responsavel.dataNascimento : '-'}"></span>
+                        </div>
+                        <div class="col-6 mb-2">
+                            <label class="text-muted small d-block">Escolaridade</label>
+                            <span class="fw-medium" th:text="${responsavel.educacaoBens.escolaridadeResponsavel != null ? responsavel.educacaoBens.escolaridadeResponsavel : '-'}"></span>
+                        </div>
+                    </div>
+                    <div th:if="${responsavel.obs}" class="mt-2">
+                        <label class="text-muted small d-block">Observações</label>
+                        <p class="small mb-0" th:text="${responsavel.obs}"></p>
+                    </div>
+                </div>
             </div>
-            <div class="col-md-6">
-                <strong>Nascimento:</strong> <span th:text="${responsavel.dataNascimento}"></span>
+
+            <div class="card">
+                <div class="card-header"><i class="bi bi-people-fill"></i> Composição Familiar</div>
+                <div class="card-body p-0">
+                    <table class="table table-sm table-hover mb-0">
+                        <thead class="table-light">
+                            <tr>
+                                <th class="ps-3">Nome</th>
+                                <th>Parentesco</th>
+                                <th>Nasc.</th>
+                                <th>Ocupação</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr th:each="membro : ${responsavel.identificacaoFamiliar}">
+                                <td class="ps-3" th:text="${membro.nomeCompleto}"></td>
+                                <td th:text="${membro.parentesco}"></td>
+                                <td th:text="${membro.dataNascimento}"></td>
+                                <td th:text="${membro.ocupacaoEscola}"></td>
+                            </tr>
+                            <tr th:if="${responsavel.identificacaoFamiliar == null or responsavel.identificacaoFamiliar.empty}">
+                                <td colspan="4" class="text-center py-3 text-muted">Nenhum outro membro cadastrado.</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <div class="card">
+                <div class="card-header"><i class="bi bi-clock-history"></i> Histórico de Retiradas</div>
+                <div class="card-body">
+                    <div th:if="${responsavel.coletas.empty}" class="alert alert-light border mb-0 text-center">
+                        Nenhuma retirada registrada até o momento.
+                    </div>
+                    <ul class="list-group list-group-flush" th:unless="${responsavel.coletas.empty}">
+                        <li class="list-group-item d-flex justify-content-between align-items-center px-0" 
+                            th:each="coleta : ${responsavel.coletas}">
+                            <div>
+                                <i class="bi bi-calendar-check text-success"></i>
+                                <span th:text="${#temporals.format(coleta.dataColeta, 'dd/MM/yyyy ''às'' HH:mm')}"></span>
+                            </div>
+                            <span class="text-muted small" th:text="${coleta.observacao}"></span>
+                        </li>
+                    </ul>
+                </div>
             </div>
         </div>
-        <div class="mt-2" th:if="${responsavel.obs}">
-            <strong>Observações:</strong>
-            <p th:text="${responsavel.obs}"></p>
+
+        <!-- Right Column: Housing, Income, Assets -->
+        <div class="col-md-5">
+            <div class="card">
+                <div class="card-header"><i class="bi bi-house-door-fill"></i> Moradia e Endereço</div>
+                <div class="card-body">
+                    <p class="fw-bold mb-1">
+                        <span th:text="${responsavel.moradia.endereco.logradouro + ', ' + responsavel.moradia.endereco.numero}"></span>
+                        <span th:if="${responsavel.moradia.endereco.complemento}" th:text="${' - ' + responsavel.moradia.endereco.complemento}"></span>
+                    </p>
+                    <p class="small text-muted mb-3" th:text="${responsavel.moradia.endereco.bairro + ' - ' + responsavel.moradia.endereco.localidade + '/' + responsavel.moradia.endereco.uf + ' (CEP: ' + responsavel.moradia.endereco.cep + ')'}"></p>
+                    <div class="row">
+                        <div class="col-6 mb-2">
+                            <label class="text-muted small d-block">Tipo</label>
+                            <span class="fw-medium" th:text="${responsavel.moradia.tipo}"></span>
+                        </div>
+                        <div class="col-6 mb-2">
+                            <label class="text-muted small d-block">Cômodos</label>
+                            <span class="fw-medium" th:text="${responsavel.moradia.numeroComodos}"></span>
+                        </div>
+                    </div>
+                    <hr class="my-2">
+                    <div class="row small">
+                        <div class="col-6 mb-1"><strong>Água:</strong> <span th:text="${responsavel.moradia.servicos.agua}"></span></div>
+                        <div class="col-6 mb-1"><strong>Esgoto:</strong> <span th:text="${responsavel.moradia.servicos.esgoto}"></span></div>
+                        <div class="col-6 mb-1"><strong>Lixo:</strong> <span th:text="${responsavel.moradia.servicos.lixo}"></span></div>
+                        <div class="col-6 mb-1"><strong>Luz:</strong> <span th:text="${responsavel.moradia.servicos.eletricidade}"></span></div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="card border-success">
+                <div class="card-header bg-success text-white"><i class="bi bi-cash-coin"></i> Renda e Benefícios</div>
+                <div class="card-body">
+                    <div class="mb-3 text-center">
+                        <label class="text-muted small d-block">Renda Bruta Familiar</label>
+                        <h3 class="text-success mb-0" th:text="${'R$ ' + responsavel.renda.rendaBruta}"></h3>
+                    </div>
+                    <hr class="my-2">
+                    <div class="small">
+                        <p class="mb-1"><strong>Fonte Principal:</strong> <span th:text="${responsavel.renda.fontesRenda.tipo}"></span></p>
+                        <p class="mb-0" th:if="${responsavel.renda.fontesRenda.outros}">
+                            <strong>Detalhes:</strong> <span th:text="${responsavel.renda.fontesRenda.outros}"></span>
+                        </p>
+                    </div>
+                </div>
+            </div>
+
+            <div class="card">
+                <div class="card-header"><i class="bi bi-box-seam-fill"></i> Bens e Outros</div>
+                <div class="card-body">
+                    <p class="mb-3"><strong>Estudantes em casa:</strong> <span class="badge bg-secondary" th:text="${responsavel.educacaoBens.qtdEstudantes}"></span></p>
+                    <div class="d-flex flex-wrap gap-2">
+                        <span th:if="${responsavel.educacaoBens.bens.geladeira}" class="badge bg-light text-dark border"><i class="bi bi-check-circle-fill text-success"></i> Geladeira</span>
+                        <span th:if="${responsavel.educacaoBens.bens.maquinaLavar}" class="badge bg-light text-dark border"><i class="bi bi-check-circle-fill text-success"></i> Máq. Lavar</span>
+                        <span th:if="${responsavel.educacaoBens.bens.computador}" class="badge bg-light text-dark border"><i class="bi bi-check-circle-fill text-success"></i> Computador</span>
+                        <span th:if="${responsavel.educacaoBens.bens.carro}" class="badge bg-light text-dark border"><i class="bi bi-check-circle-fill text-success"></i> Carro</span>
+                        <span th:if="${responsavel.educacaoBens.bens.motocicleta}" class="badge bg-light text-dark border"><i class="bi bi-check-circle-fill text-success"></i> Motocicleta</span>
+                    </div>
+                </div>
+            </div>
         </div>
     </div>
 
-    <h4>Histórico de Retiradas</h4>
-    <hr>
-    <div th:if="${responsavel.coletas.empty}" class="alert alert-info">
-        Nenhuma retirada registrada até o momento.
-    </div>
-    
-    <ul class="list-group" th:unless="${responsavel.coletas.empty}">
-        <li class="list-group-item d-flex justify-content-between align-items-center" 
-            th:each="coleta : ${responsavel.coletas}">
-            <div>
-                <i class="bi bi-calendar-check"></i>
-                <span th:text="${#temporals.format(coleta.dataColeta, 'dd/MM/yyyy ''às'' HH:mm')}"></span>
-            </div>
-            <span class="text-muted small" th:text="${coleta.observacao}"></span>
-        </li>
-    </ul>
-
-    <div class="mt-4">
-        <a href="/" class="btn btn-secondary">Voltar para a Lista</a>
+    <div class="mt-4 text-center">
+        <a href="/" class="btn btn-secondary">
+            <i class="bi bi-arrow-left"></i> Voltar para a Lista
+        </a>
     </div>
 </div>
+<div th:replace="~{fragments :: scripts}"></div>
 </body>
 </html>

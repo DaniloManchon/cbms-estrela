@@ -1,47 +1,414 @@
 <!DOCTYPE html>
 <html xmlns:th="http://www.thymeleaf.org">
-<head>
-    <meta charset="UTF-8">
-    <title>Novo Responsável - CBMS</title>
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css">
-    <style>
-        body { padding: 20px; background-color: #f8f9fa; }
-        .container { max-width: 600px; background: white; padding: 30px; border-radius: 10px; box-shadow: 0 0 10px rgba(0,0,0,0.1); }
-    </style>
-</head>
+<head th:replace="~{fragments :: head('Cadastro de Responsável')}"></head>
 <body>
-<div class="container">
-    <h2>Cadastrar Responsável</h2>
+<div class="container-main">
+    <h2 th:text="${responsavel.id == null ? 'Novo Responsável' : 'Editar Responsável'}">Novo Responsável</h2>
     <hr>
-    <div th:if="${erro}" class="alert alert-danger" th:text="${erro}"></div>
+    
+    <div th:replace="~{fragments :: alerts}"></div>
 
-    <form th:action="@{/salvar}" th:object="${responsavel}" method="post">
-        <div class="mb-3">
-            <label class="form-label">Nome Completo</label>
-            <input type="text" th:field="*{nomeCompleto}" class="form-control" required>
-        </div>
-        <div class="mb-3">
-            <label class="form-label">CPF</label>
-            <input type="text" th:field="*{cpf}" class="form-control" required placeholder="000.000.000-00">
-        </div>
-        <div class="mb-3">
-            <label class="form-label">Celular</label>
-            <input type="text" th:field="*{celular}" class="form-control">
-        </div>
-        <div class="mb-3">
-            <label class="form-label">Data de Nascimento</label>
-            <input type="date" th:field="*{dataNascimento}" class="form-control">
-        </div>
-        <div class="mb-3">
-            <label class="form-label">Observações</label>
-            <textarea th:field="*{obs}" class="form-control"></textarea>
+    <form th:action="@{/salvar}" th:object="${responsavel}" method="post" id="responsavelForm">
+        <input type="hidden" th:field="*{id}">
+        
+        <!-- Tabs Nav -->
+        <ul class="nav nav-tabs" id="formTabs" role="tablist">
+            <li class="nav-item" role="presentation">
+                <button class="nav-link active" id="dados-tab" data-bs-toggle="tab" data-bs-target="#dados" type="button" role="tab">Dados Pessoais</button>
+            </li>
+            <li class="nav-item" role="presentation">
+                <button class="nav-link" id="moradia-tab" data-bs-toggle="tab" data-bs-target="#moradia" type="button" role="tab">Moradia</button>
+            </li>
+            <li class="nav-item" role="presentation">
+                <button class="nav-link" id="renda-tab" data-bs-toggle="tab" data-bs-target="#renda" type="button" role="tab">Renda</button>
+            </li>
+            <li class="nav-item" role="presentation">
+                <button class="nav-link" id="educacao-tab" data-bs-toggle="tab" data-bs-target="#educacao" type="button" role="tab">Educação e Bens</button>
+            </li>
+            <li class="nav-item" role="presentation">
+                <button class="nav-link" id="familia-tab" data-bs-toggle="tab" data-bs-target="#familia" type="button" role="tab">Família</button>
+            </li>
+        </ul>
+
+        <!-- Tabs Content -->
+        <div class="tab-content" id="formTabsContent">
+            <!-- Dados Pessoais -->
+            <div class="tab-pane fade show active" id="dados" role="tabpanel">
+                <div class="row">
+                    <div class="col-md-8 mb-3">
+                        <label class="form-label">Nome Completo</label>
+                        <input type="text" th:field="*{nomeCompleto}" class="form-control" required>
+                    </div>
+                    <div class="col-md-4 mb-3">
+                        <label class="form-label">CPF</label>
+                        <input type="text" th:field="*{cpf}" class="form-control cpf-mask" required placeholder="000.000.000-00" maxlength="14">
+                    </div>
+                </div>
+                <div class="row">
+                    <div class="col-md-6 mb-3">
+                        <label class="form-label">Celular</label>
+                        <input type="text" th:field="*{celular}" class="form-control celular-mask" placeholder="(00) 00000-0000" maxlength="15">
+                    </div>
+                    <div class="col-md-6 mb-3">
+                        <label class="form-label">Data de Nascimento</label>
+                        <div class="input-group">
+                            <input type="text" th:field="*{dataNascimento}" class="form-control date-mask" id="dataNascimento" placeholder="DD/MM/AAAA" maxlength="10">
+                            <button class="btn btn-outline-secondary" type="button" onclick="document.getElementById('datePicker').showPicker()">
+                                <i class="bi bi-calendar3"></i>
+                            </button>
+                            <input type="date" id="datePicker" style="position: absolute; top: 0; left: 0; opacity: 0; width: 1px; height: 1px; pointer-events: none;">
+                        </div>
+                    </div>
+                </div>
+                <div class="mb-3">
+                    <label class="form-label">Observações</label>
+                    <textarea th:field="*{obs}" class="form-control" rows="3"></textarea>
+                </div>
+            </div>
+
+            <!-- Moradia -->
+            <div class="tab-pane fade" id="moradia" role="tabpanel">
+                <div class="section-title">Endereço</div>
+                <div class="row">
+                    <div class="col-md-3 mb-3">
+                        <label class="form-label">CEP</label>
+                        <div class="d-flex align-items-center">
+                            <input type="text" th:field="*{moradia.endereco.cep}" class="form-control cep-mask" id="cep" placeholder="00000-000" maxlength="9">
+                            <div class="spinner-border spinner-border-sm text-primary loading-spinner" id="cepSpinner" role="status"></div>
+                        </div>
+                    </div>
+                    <div class="col-md-7 mb-3">
+                        <label class="form-label">Logradouro</label>
+                        <input type="text" th:field="*{moradia.endereco.logradouro}" class="form-control" id="logradouro">
+                    </div>
+                    <div class="col-md-2 mb-3">
+                        <label class="form-label">Nº</label>
+                        <input type="text" th:field="*{moradia.endereco.numero}" class="form-control">
+                    </div>
+                </div>
+                <div class="row">
+                    <div class="col-md-4 mb-3">
+                        <label class="form-label">Bairro</label>
+                        <input type="text" th:field="*{moradia.endereco.bairro}" class="form-control" id="bairro">
+                    </div>
+                    <div class="col-md-3 mb-3">
+                        <label class="form-label">Complemento</label>
+                        <input type="text" th:field="*{moradia.endereco.complemento}" class="form-control" placeholder="Apto, Bloco, etc.">
+                    </div>
+                    <div class="col-md-3 mb-3">
+                        <label class="form-label">Localidade</label>
+                        <input type="text" th:field="*{moradia.endereco.localidade}" class="form-control" id="localidade">
+                    </div>
+                    <div class="col-md-2 mb-3">
+                        <label class="form-label">UF</label>
+                        <input type="text" th:field="*{moradia.endereco.uf}" class="form-control" id="uf">
+                    </div>
+                </div>
+                
+                <div class="section-title mt-3">Características</div>
+                <div class="row">
+                    <div class="col-md-4 mb-3">
+                        <label class="form-label">Tipo de Moradia</label>
+                        <select th:field="*{moradia.tipo}" class="form-select">
+                            <option value="">Selecione...</option>
+                            <option value="Própria">Própria</option>
+                            <option value="Alugada">Alugada</option>
+                            <option value="Cedida">Cedida</option>
+                            <option value="Ocupação">Ocupação</option>
+                        </select>
+                    </div>
+                    <div class="col-md-4 mb-3">
+                        <label class="form-label">Nº Cômodos</label>
+                        <input type="number" th:field="*{moradia.numeroComodos}" class="form-control">
+                    </div>
+                    <div class="col-md-4 mb-3">
+                        <label class="form-label">Material</label>
+                        <input type="text" th:field="*{moradia.material}" class="form-control" placeholder="Ex: Alvenaria">
+                    </div>
+                </div>
+
+                <div class="section-title mt-3">Serviços</div>
+                <div class="row">
+                    <div class="col-md-3 mb-3">
+                        <label class="form-label">Água</label>
+                        <select th:field="*{moradia.servicos.agua}" class="form-select">
+                            <option value="Rede Pública">Rede Pública</option>
+                            <option value="Poço">Poço</option>
+                            <option value="Caminhão Pipa">Caminhão Pipa</option>
+                            <option value="Não possui">Não possui</option>
+                        </select>
+                    </div>
+                    <div class="col-md-3 mb-3">
+                        <label class="form-label">Esgoto</label>
+                        <select th:field="*{moradia.servicos.esgoto}" class="form-select">
+                            <option value="Rede Pública">Rede Pública</option>
+                            <option value="Fossa">Fossa</option>
+                            <option value="Céu Aberto">Céu Aberto</option>
+                            <option value="Não possui">Não possui</option>
+                        </select>
+                    </div>
+                    <div class="col-md-3 mb-3">
+                        <label class="form-label">Lixo</label>
+                        <select th:field="*{moradia.servicos.lixo}" class="form-select">
+                            <option value="Coleta Pública">Coleta Pública</option>
+                            <option value="Queima/Enterra">Queima/Enterra</option>
+                            <option value="Não possui">Não possui</option>
+                        </select>
+                    </div>
+                    <div class="col-md-3 mb-3">
+                        <label class="form-label">Eletricidade</label>
+                        <select th:field="*{moradia.servicos.eletricidade}" class="form-select">
+                            <option value="Com Relógio">Com Relógio</option>
+                            <option value="Sem Relógio">Sem Relógio</option>
+                            <option value="Não possui">Não possui</option>
+                        </select>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Renda -->
+            <div class="tab-pane fade" id="renda" role="tabpanel">
+                <div class="row mb-4">
+                    <div class="col-md-4">
+                        <label class="form-label">Renda Bruta Familiar</label>
+                        <div class="input-group">
+                            <span class="input-group-text">R$</span>
+                            <input type="text" th:field="*{renda.rendaBruta}" class="form-control">
+                        </div>
+                    </div>
+                </div>
+                <div class="section-title">Fonte de Renda</div>
+                <div class="row">
+                    <div class="col-md-6 mb-3">
+                        <label class="form-label">Principal Fonte de Renda</label>
+                        <select th:field="*{renda.fontesRenda.tipo}" class="form-select" id="selectFonteRenda">
+                            <option value="">Selecione...</option>
+                            <option value="Trabalho Formal">Trabalho Formal</option>
+                            <option value="Trabalho Informal">Trabalho Informal</option>
+                            <option value="Pensão">Pensão</option>
+                            <option value="BPC/LOAS">BPC/LOAS</option>
+                            <option value="Outros">Outros</option>
+                        </select>
+                    </div>
+                    <div class="col-md-6 mb-3 d-none" id="divOutraFonte">
+                        <label class="form-label">Especifique (se Outros)</label>
+                        <input type="text" th:field="*{renda.fontesRenda.outros}" class="form-control">
+                    </div>
+                </div>
+            </div>
+
+            <!-- Educação e Bens -->
+            <div class="tab-pane fade" id="educacao" role="tabpanel">
+                <div class="row">
+                    <div class="col-md-8 mb-3">
+                        <label class="form-label">Escolaridade do Responsável</label>
+                        <select th:field="*{educacaoBens.escolaridadeResponsavel}" class="form-select">
+                            <option value="">Selecione...</option>
+                            <option value="Analfabeto">Analfabeto</option>
+                            <option value="Fundamental Incompleto">Fundamental Incompleto</option>
+                            <option value="Fundamental Completo">Fundamental Completo</option>
+                            <option value="Médio Incompleto">Médio Incompleto</option>
+                            <option value="Médio Completo">Médio Completo</option>
+                            <option value="Superior">Superior</option>
+                        </select>
+                    </div>
+                    <div class="col-md-4 mb-3">
+                        <label class="form-label">Qtd. Estudantes na Casa</label>
+                        <input type="number" th:field="*{educacaoBens.qtdEstudantes}" class="form-control">
+                    </div>
+                </div>
+
+                <div class="section-title mt-3">Bens Duráveis</div>
+                <div class="row">
+                    <div class="col-md-4 mb-3">
+                        <label class="form-label">Geladeira</label>
+                        <select th:field="*{educacaoBens.bens.geladeira}" class="form-select">
+                            <option value="true">Sim</option>
+                            <option value="false">Não</option>
+                        </select>
+                    </div>
+                    <div class="col-md-4 mb-3">
+                        <label class="form-label">Máquina de Lavar</label>
+                        <select th:field="*{educacaoBens.bens.maquinaLavar}" class="form-select">
+                            <option value="true">Sim</option>
+                            <option value="false">Não</option>
+                        </select>
+                    </div>
+                    <div class="col-md-4 mb-3">
+                        <label class="form-label">Computador</label>
+                        <select th:field="*{educacaoBens.bens.computador}" class="form-select">
+                            <option value="true">Sim</option>
+                            <option value="false">Não</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="row">
+                    <div class="col-md-4 mb-3">
+                        <label class="form-label">Carro</label>
+                        <select th:field="*{educacaoBens.bens.carro}" class="form-select">
+                            <option value="true">Sim</option>
+                            <option value="false">Não</option>
+                        </select>
+                    </div>
+                    <div class="col-md-4 mb-3">
+                        <label class="form-label">Motocicleta</label>
+                        <select th:field="*{educacaoBens.bens.motocicleta}" class="form-select">
+                            <option value="true">Sim</option>
+                            <option value="false">Não</option>
+                        </select>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Família -->
+            <div class="tab-pane fade" id="familia" role="tabpanel">
+                <div class="d-flex justify-content-between align-items-center mb-3">
+                    <div class="section-title mb-0" style="border:none">Outros Membros da Família</div>
+                    <button type="button" class="btn btn-sm btn-success" id="addMembro">
+                        <i class="bi bi-plus-lg"></i> Adicionar Membro
+                    </button>
+                </div>
+                
+                <div class="table-responsive">
+                    <table class="table table-bordered" id="tabelaFamilia">
+                        <thead class="table-light">
+                            <tr>
+                                <th>Nome Completo</th>
+                                <th>Parentesco</th>
+                                <th>Nascimento</th>
+                                <th>Ocupação/Escola</th>
+                                <th>Ações</th>
+                            </tr>
+                        </thead>
+                        <tbody id="membrosCorpo">
+                            <tr th:each="membro, stat : *{identificacaoFamiliar}">
+                                <td><input type="text" th:field="*{identificacaoFamiliar[__${stat.index}__].nomeCompleto}" class="form-control form-control-sm" required></td>
+                                <td><input type="text" th:field="*{identificacaoFamiliar[__${stat.index}__].parentesco}" class="form-control form-control-sm" required></td>
+                                <td>
+                                    <div class="input-group input-group-sm">
+                                        <input type="text" th:field="*{identificacaoFamiliar[__${stat.index}__].dataNascimento}" class="form-control date-mask" placeholder="DD/MM/AAAA" maxlength="10">
+                                        <button class="btn btn-outline-secondary" type="button" th:onclick="|document.getElementById('dp-fam-${stat.index}').showPicker()|">
+                                            <i class="bi bi-calendar3"></i>
+                                        </button>
+                                        <input type="date" th:id="'dp-fam-' + ${stat.index}" class="fam-dp" style="position: absolute; opacity: 0; width: 1px; height: 1px; pointer-events: none;">
+                                    </div>
+                                </td>
+                                <td><input type="text" th:field="*{identificacaoFamiliar[__${stat.index}__].ocupacaoEscola}" class="form-control form-control-sm"></td>
+                                <td class="text-center">
+                                    <button type="button" class="btn btn-outline-danger btn-sm" onclick="this.closest('tr').remove()">
+                                        <i class="bi bi-trash"></i>
+                                    </button>
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
         </div>
         
-        <div class="d-flex justify-content-between">
-            <a href="/" class="btn btn-secondary">Voltar</a>
-            <button type="submit" class="btn btn-primary">Salvar Cadastro</button>
+        <div class="d-flex justify-content-between mt-4">
+            <a href="/" class="btn btn-secondary">
+                <i class="bi bi-x-circle"></i> Cancelar
+            </a>
+            <button type="submit" class="btn btn-primary btn-lg">
+                <i class="bi bi-check-circle"></i> Salvar Cadastro
+            </button>
         </div>
     </form>
 </div>
+
+<div th:replace="~{fragments :: scripts}"></div>
+<div th:replace="~{fragments :: masks}"></div>
+
+<script>
+    let membroIndex = document.querySelectorAll('#membrosCorpo tr').length;
+
+    function addMembroRow() {
+        const tbody = document.getElementById('membrosCorpo');
+        const row = document.createElement('tr');
+        row.innerHTML = `
+            <td><input type="text" name="identificacaoFamiliar[${membroIndex}].nomeCompleto" class="form-control form-control-sm" required></td>
+            <td><input type="text" name="identificacaoFamiliar[${membroIndex}].parentesco" class="form-control form-control-sm" required></td>
+            <td>
+                <div class="input-group input-group-sm">
+                    <input type="text" name="identificacaoFamiliar[${membroIndex}].dataNascimento" class="form-control date-mask" placeholder="DD/MM/AAAA" maxlength="10">
+                    <button class="btn btn-outline-secondary" type="button" onclick="this.nextElementSibling.showPicker()">
+                        <i class="bi bi-calendar3"></i>
+                    </button>
+                    <input type="date" class="fam-dp" style="position: absolute; opacity: 0; width: 1px; height: 1px; pointer-events: none;">
+                </div>
+            </td>
+            <td><input type="text" name="identificacaoFamiliar[${membroIndex}].ocupacaoEscola" class="form-control form-control-sm"></td>
+            <td class="text-center">
+                <button type="button" class="btn btn-outline-danger btn-sm" onclick="this.closest('tr').remove()">
+                    <i class="bi bi-trash"></i>
+                </button>
+            </td>
+        `;
+        tbody.appendChild(row);
+        const dateInput = row.querySelector('.date-mask');
+        if (dateInput) aplicarMascaraData(dateInput);
+        membroIndex++;
+    }
+
+    document.getElementById('addMembro').addEventListener('click', addMembroRow);
+
+    // Sincronização Global de DatePickers
+    document.addEventListener('change', function(e) {
+        if (e.target.type === 'date') {
+            const dateInput = e.target;
+            const textInput = dateInput.closest('.input-group').querySelector('.date-mask');
+            if (textInput && dateInput.value) {
+                const [year, month, day] = dateInput.value.split('-');
+                textInput.value = `${day}/${month}/${year}`;
+                textInput.dispatchEvent(new Event('input'));
+            }
+        }
+    });
+
+    const selectFonteRenda = document.getElementById('selectFonteRenda');
+    const divOutraFonte = document.getElementById('divOutraFonte');
+
+    if (selectFonteRenda) {
+        selectFonteRenda.addEventListener('change', function() {
+            if (this.value === 'Outros') {
+                divOutraFonte.classList.remove('d-none');
+            } else {
+                divOutraFonte.classList.add('d-none');
+                divOutraFonte.querySelector('input').value = '';
+            }
+        });
+        if (selectFonteRenda.value === 'Outros') divOutraFonte.classList.remove('d-none');
+    }
+
+    const cepInput = document.getElementById('cep');
+    const spinner = document.getElementById('cepSpinner');
+
+    if (cepInput) {
+        cepInput.addEventListener('blur', function() {
+            let cep = this.value.replace(/\D/g, '');
+            if (cep.length === 8) {
+                spinner.style.display = 'block';
+                fetch(`https://viacep.com.br/ws/${cep}/json/`)
+                    .then(response => response.json())
+                    .then(data => {
+                        spinner.style.display = 'none';
+                        if (!data.erro) {
+                            document.getElementById('logradouro').value = data.logradouro;
+                            document.getElementById('bairro').value = data.bairro;
+                            document.getElementById('localidade').value = data.localidade;
+                            document.getElementById('uf').value = data.uf;
+                        } else {
+                            alert('CEP não encontrado.');
+                        }
+                    })
+                    .catch(() => {
+                        spinner.style.display = 'none';
+                        alert('Erro ao consultar o serviço de CEP.');
+                    });
+            }
+        });
+    }
+</script>
 </body>
 </html>

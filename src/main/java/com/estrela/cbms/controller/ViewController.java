@@ -1,6 +1,6 @@
 package com.estrela.cbms.controller;
 
-import com.estrela.cbms.model.Responsavel;
+import com.estrela.cbms.model.*;
 import com.estrela.cbms.service.ResponsavelService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
@@ -12,6 +12,9 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
 import org.springframework.web.bind.annotation.RequestParam;
+
+import jakarta.validation.Valid;
+import org.springframework.validation.BindingResult;
 
 @Controller
 public class ViewController {
@@ -32,8 +35,21 @@ public class ViewController {
 
     @GetMapping("/novo")
     public String novoResponsavel(Model model) {
-        model.addAttribute("responsavel", new Responsavel());
+        Responsavel responsavel = new Responsavel();
+        responsavelService.inicializarObjetosAninhados(responsavel);
+        model.addAttribute("responsavel", responsavel);
         return "form";
+    }
+
+    @GetMapping("/editar/{id}")
+    public String editar(@PathVariable Long id, Model model) {
+        try {
+            Responsavel responsavel = responsavelService.buscarPorId(id);
+            model.addAttribute("responsavel", responsavel);
+            return "form";
+        } catch (Exception e) {
+            return "redirect:/?erro=Responsavel nao encontrado";
+        }
     }
 
     @GetMapping("/perfil/{id}")
@@ -47,7 +63,12 @@ public class ViewController {
     }
 
     @PostMapping("/salvar")
-    public String salvar(@ModelAttribute Responsavel responsavel, RedirectAttributes redirectAttributes) {
+    public String salvar(@Valid @ModelAttribute Responsavel responsavel, BindingResult result, RedirectAttributes redirectAttributes) {
+        if (result.hasErrors()) {
+            String erroMsg = result.getAllErrors().get(0).getDefaultMessage();
+            redirectAttributes.addFlashAttribute("erro", erroMsg);
+            return "redirect:/novo";
+        }
         try {
             responsavelService.salvar(responsavel);
             redirectAttributes.addFlashAttribute("sucesso", "Responsável cadastrado com sucesso!");

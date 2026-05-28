@@ -1,9 +1,15 @@
 package com.estrela.cbms.model;
 
 import jakarta.persistence.Embeddable;
-import lombok.Data;
+import lombok.Getter;
+import lombok.Setter;
+import lombok.NoArgsConstructor;
+import lombok.AllArgsConstructor;
 
-@Data
+@Getter
+@Setter
+@NoArgsConstructor
+@AllArgsConstructor
 @Embeddable
 public class Endereco {
     private String cep;
@@ -11,6 +17,8 @@ public class Endereco {
     private String logradouro;
 
     private String numero;
+
+    private String complemento;
 
     private String bairro;
 

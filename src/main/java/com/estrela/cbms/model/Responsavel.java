@@ -2,11 +2,17 @@ package com.estrela.cbms.model;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 import jakarta.persistence.*;
-import lombok.Data;
+import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.Pattern;
+import lombok.*;
 
 import java.util.List;
+import java.util.Objects;
 
-@Data
+@Getter
+@Setter
+@NoArgsConstructor
+@AllArgsConstructor
 @Entity
 public class Responsavel {
 
@@ -14,9 +20,12 @@ public class Responsavel {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
+    @NotBlank(message = "O nome completo é obrigatório")
     @JsonProperty("nome_completo")
     private String nomeCompleto;
 
+    @NotBlank(message = "O CPF é obrigatório")
+    @Pattern(regexp = "\\d{3}\\.\\d{3}\\.\\d{3}-\\d{2}", message = "O CPF deve seguir o padrão 000.000.000-00")
     @Column(unique = true)
     private String cpf;
 
@@ -31,9 +40,16 @@ public class Responsavel {
     private List<IdentificacaoFamiliar> identificacaoFamiliar;
 
     @Embedded
+    @AttributeOverrides({
+        @AttributeOverride(name = "fontesRenda.tipo", column = @Column(name = "renda_fonte_tipo")),
+        @AttributeOverride(name = "fontesRenda.outros", column = @Column(name = "renda_fonte_outros"))
+    })
     private Renda renda;
 
     @Embedded
+    @AttributeOverrides({
+        @AttributeOverride(name = "tipo", column = @Column(name = "moradia_tipo"))
+    })
     private Moradia moradia;
 
     @Embedded
@@ -44,5 +60,17 @@ public class Responsavel {
 
     @OneToMany(mappedBy = "responsavel", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<Coleta> coletas;
-}
 
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+        Responsavel that = (Responsavel) o;
+        return Objects.equals(id, that.id);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hashCode(id);
+    }
+}

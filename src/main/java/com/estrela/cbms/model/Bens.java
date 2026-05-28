@@ -2,19 +2,25 @@ package com.estrela.cbms.model;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 import jakarta.persistence.Embeddable;
-import lombok.Data;
+import lombok.Getter;
+import lombok.Setter;
+import lombok.NoArgsConstructor;
+import lombok.AllArgsConstructor;
 
-@Data
+@Getter
+@Setter
+@NoArgsConstructor
+@AllArgsConstructor
 @Embeddable
 public class Bens {
-    private String geladeira;
+    private boolean geladeira;
 
     @JsonProperty("maquina_lavar")
-    private String maquinaLavar;
+    private boolean maquinaLavar;
 
-    private String computador;
+    private boolean computador;
 
-    private String carro;
+    private boolean carro;
 
-    private String motocicleta;
+    private boolean motocicleta;
 }

@@ -1,18 +1,17 @@
 package com.estrela.cbms.model;
 
 import jakarta.persistence.Embeddable;
-import lombok.Data;
+import lombok.Getter;
+import lombok.Setter;
+import lombok.NoArgsConstructor;
+import lombok.AllArgsConstructor;
 
-@Data
+@Getter
+@Setter
+@NoArgsConstructor
+@AllArgsConstructor
 @Embeddable
 public class FontesRenda {
-    private String formal;
-
-    private String informal;
-
-    private String pensao;
-
-    private String bpc;
-
+    private String tipo;
     private String outros;
 }
