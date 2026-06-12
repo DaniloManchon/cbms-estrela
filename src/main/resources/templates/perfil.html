@@ -7,9 +7,17 @@
     
     <!-- Header -->
     <div class="d-flex justify-content-between align-items-start mb-4">
-        <div>
-            <h2 th:text="${responsavel.nomeCompleto}">Nome do Responsável</h2>
-            <p class="text-muted mb-0">CPF: <span th:text="${responsavel.cpf}"></span> | Celular: <span th:text="${responsavel.celular}"></span></p>
+        <div class="d-flex align-items-center">
+            <div class="me-4">
+                <img th:if="${responsavel.foto}" th:src="${responsavel.foto}" class="rounded-3 border shadow-sm" style="width: 150px; height: 150px; object-fit: cover;">
+                <div th:unless="${responsavel.foto}" class="rounded-3 bg-light d-flex align-items-center justify-content-center border shadow-sm" style="width: 150px; height: 150px;">
+                    <i class="bi bi-person fs-1 text-secondary"></i>
+                </div>
+            </div>
+            <div>
+                <h2 th:text="${responsavel.nomeCompleto}" class="mb-0">Nome do Responsável</h2>
+                <p class="text-muted mb-0">CPF: <span th:text="${responsavel.cpf}"></span> | Celular: <span th:text="${responsavel.celular}"></span></p>
+            </div>
         </div>
         <div class="text-end">
             <a th:href="@{/editar/{id}(id=${responsavel.id})}" class="btn btn-outline-primary mb-2">
@@ -73,10 +81,10 @@
             <div class="card">
                 <div class="card-header"><i class="bi bi-clock-history"></i> Histórico de Retiradas</div>
                 <div class="card-body">
-                    <div th:if="${responsavel.coletas.empty}" class="alert alert-light border mb-0 text-center">
+                    <div th:if="${responsavel.coletas == null or responsavel.coletas.empty}" class="alert alert-light border mb-0 text-center">
                         Nenhuma retirada registrada até o momento.
                     </div>
-                    <ul class="list-group list-group-flush" th:unless="${responsavel.coletas.empty}">
+                    <ul class="list-group list-group-flush" th:unless="${responsavel.coletas == null or responsavel.coletas.empty}">
                         <li class="list-group-item d-flex justify-content-between align-items-center px-0" 
                             th:each="coleta : ${responsavel.coletas}">
                             <div>

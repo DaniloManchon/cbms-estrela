@@ -1,6 +1,6 @@
 # TO DO list
 
-1. [ ] Criar campo para inserir imagem de perfil no responsavel
+1. [x] Criar campo para inserir imagem de perfil no responsavel
 2. [ ] Criar sistema para gerar codigo de barras
    - [ ] Criar código
    - [ ] Salvar códigos no banco de dados

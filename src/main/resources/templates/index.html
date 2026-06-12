@@ -37,18 +37,18 @@
             </thead>
             <tbody>
             <tr th:each="r : ${responsaveis}">
-                <td>
+                <td class="align-middle">
                     <a th:href="@{'/perfil/' + ${r.id}}" th:text="${r.nomeCompleto}" class="text-decoration-none fw-bold"></a>
                 </td>
-                <td th:text="${r.cpf}"></td>
-                <td>
+                <td class="align-middle" th:text="${r.cpf}"></td>
+                <td class="align-middle">
                     <span th:if="${r.coletas != null and !r.coletas.empty}" 
                           th:text="${#temporals.format(r.coletas[0].dataColeta, 'dd/MM/yyyy HH:mm')}">
                     </span>
                     <span th:unless="${r.coletas != null and !r.coletas.empty}" class="text-muted small">Nenhuma</span>
                 </td>
-                <td th:text="${r.coletas != null ? r.coletas.size() : 0}"></td>
-                <td class="text-center">
+                <td class="align-middle" th:text="${r.coletas != null ? r.coletas.size() : 0}"></td>
+                <td class="text-center align-middle">
                     <div class="btn-group" role="group">
                         <form th:action="@{'/coleta/' + ${r.cpf}}" method="post" style="display:inline;">
                             <button type="submit" class="btn btn-sm btn-success" title="Registrar Coleta">
@@ -64,7 +64,7 @@
                     </div>
                 </td>
             </tr>
-            <tr th:if="${responsaveis.empty}">
+            <tr th:if="${responsaveis == null or responsaveis.empty}">
                 <td colspan="5" class="text-center py-4 text-muted">Nenhum responsável encontrado.</td>
             </tr>
             </tbody>

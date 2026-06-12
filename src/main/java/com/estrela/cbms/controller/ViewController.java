@@ -24,12 +24,15 @@ public class ViewController {
 
     @GetMapping("/")
     public String index(@RequestParam(required = false) String busca, Model model) {
+        java.util.List<Responsavel> lista;
         if (busca != null && !busca.isBlank()) {
-            model.addAttribute("responsaveis", responsavelService.buscar(busca));
-            model.addAttribute("termoBusca", busca);
+            lista = responsavelService.buscar(busca);
         } else {
-            model.addAttribute("responsaveis", responsavelService.listarTodos());
+            lista = responsavelService.listarTodos();
         }
+        System.out.println("DEBUG: Listando responsáveis. Quantidade encontrada: " + (lista != null ? lista.size() : "null"));
+        model.addAttribute("responsaveis", lista);
+        model.addAttribute("termoBusca", busca);
         return "index";
     }
 
@@ -70,9 +73,13 @@ public class ViewController {
             return "redirect:/novo";
         }
         try {
+            System.out.println("DEBUG: Tentando salvar responsável: " + responsavel.getNomeCompleto());
             responsavelService.salvar(responsavel);
+            System.out.println("DEBUG: Responsável salvo com sucesso!");
             redirectAttributes.addFlashAttribute("sucesso", "Responsável cadastrado com sucesso!");
         } catch (Exception e) {
+            System.err.println("DEBUG: Erro ao salvar responsável: " + e.getMessage());
+            e.printStackTrace();
             redirectAttributes.addFlashAttribute("erro", e.getMessage());
             return "redirect:/novo";
         }

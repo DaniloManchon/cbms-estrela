@@ -34,6 +34,10 @@ public class Responsavel {
     @JsonProperty("data_nascimento")
     private String dataNascimento;
 
+    @Lob
+    @Column(columnDefinition = "LONGTEXT")
+    private String foto;
+
     @ElementCollection
     @CollectionTable(name = "identificacao_familiar", joinColumns = @JoinColumn(name = "responsavel_id"))
     @JsonProperty("identificacao_familiar")

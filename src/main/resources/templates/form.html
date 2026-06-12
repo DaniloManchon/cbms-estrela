@@ -35,28 +35,62 @@
             <!-- Dados Pessoais -->
             <div class="tab-pane fade show active" id="dados" role="tabpanel">
                 <div class="row">
-                    <div class="col-md-8 mb-3">
-                        <label class="form-label">Nome Completo</label>
-                        <input type="text" th:field="*{nomeCompleto}" class="form-control" required>
-                    </div>
-                    <div class="col-md-4 mb-3">
-                        <label class="form-label">CPF</label>
-                        <input type="text" th:field="*{cpf}" class="form-control cpf-mask" required placeholder="000.000.000-00" maxlength="14">
-                    </div>
-                </div>
-                <div class="row">
-                    <div class="col-md-6 mb-3">
-                        <label class="form-label">Celular</label>
-                        <input type="text" th:field="*{celular}" class="form-control celular-mask" placeholder="(00) 00000-0000" maxlength="15">
-                    </div>
-                    <div class="col-md-6 mb-3">
-                        <label class="form-label">Data de Nascimento</label>
-                        <div class="input-group">
-                            <input type="text" th:field="*{dataNascimento}" class="form-control date-mask" id="dataNascimento" placeholder="DD/MM/AAAA" maxlength="10">
-                            <button class="btn btn-outline-secondary" type="button" onclick="document.getElementById('datePicker').showPicker()">
-                                <i class="bi bi-calendar3"></i>
+                    <!-- Coluna da Foto -->
+                    <div class="col-md-4 mb-3 text-center">
+                        <label class="form-label d-block">Foto de Perfil</label>
+                        <div class="webcam-container">
+                            <video id="webcam-preview" autoplay playsinline></video>
+                            <img id="photo-preview" th:src="${responsavel.foto != null ? responsavel.foto : ''}" th:style="${responsavel.foto != null ? 'display:block' : 'display:none'}">
+                            <div id="placeholder" class="photo-placeholder" th:style="${responsavel.foto == null ? 'display:flex' : 'display:none'}">
+                                <i class="bi bi-camera fs-1"></i>
+                                <span>Sem foto</span>
+                            </div>
+                        </div>
+                        <input type="hidden" th:field="*{foto}" id="inputFoto">
+                        <canvas id="canvas-capture" style="display:none;"></canvas>
+                        
+                        <div class="webcam-controls mt-2">
+                            <button type="button" class="btn btn-sm btn-outline-secondary" id="btn-abrir-camera">
+                                <i class="bi bi-camera-video"></i> Abrir Câmera
                             </button>
-                            <input type="date" id="datePicker" style="position: absolute; top: 0; left: 0; opacity: 0; width: 1px; height: 1px; pointer-events: none;">
+                            <button type="button" class="btn btn-sm btn-success d-none" id="btn-capturar">
+                                <i class="bi bi-camera"></i> Tirar Foto
+                            </button>
+                            <button type="button" class="btn btn-sm btn-danger d-none" id="btn-resetar">
+                                <i class="bi bi-arrow-counterclockwise"></i> Nova Foto
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- Coluna dos Dados -->
+                    <div class="col-md-8">
+                        <div class="row">
+                            <div class="col-md-12 mb-3">
+                                <label class="form-label">Nome Completo</label>
+                                <input type="text" th:field="*{nomeCompleto}" class="form-control" required>
+                            </div>
+                        </div>
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <label class="form-label">CPF</label>
+                                <input type="text" th:field="*{cpf}" class="form-control cpf-mask" required placeholder="000.000.000-00" maxlength="14">
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <label class="form-label">Celular</label>
+                                <input type="text" th:field="*{celular}" class="form-control celular-mask" placeholder="(00) 00000-0000" maxlength="15">
+                            </div>
+                        </div>
+                        <div class="row">
+                            <div class="col-md-12 mb-3">
+                                <label class="form-label">Data de Nascimento</label>
+                                <div class="input-group">
+                                    <input type="text" th:field="*{dataNascimento}" class="form-control date-mask" id="dataNascimento" placeholder="DD/MM/AAAA" maxlength="10">
+                                    <button class="btn btn-outline-secondary" type="button" onclick="document.getElementById('datePicker').showPicker()">
+                                        <i class="bi bi-calendar3"></i>
+                                    </button>
+                                    <input type="date" id="datePicker" style="position: absolute; top: 0; left: 0; opacity: 0; width: 1px; height: 1px; pointer-events: none;">
+                                </div>
+                            </div>
                         </div>
                     </div>
                 </div>
@@ -409,6 +443,59 @@
             }
         });
     }
+
+    // Webcam Logic
+    const video = document.getElementById('webcam-preview');
+    const photoPreview = document.getElementById('photo-preview');
+    const placeholder = document.getElementById('placeholder');
+    const canvas = document.getElementById('canvas-capture');
+    const inputFoto = document.getElementById('inputFoto');
+    const btnAbrir = document.getElementById('btn-abrir-camera');
+    const btnCapturar = document.getElementById('btn-capturar');
+    const btnResetar = document.getElementById('btn-resetar');
+    let stream = null;
+
+    btnAbrir.addEventListener('click', async () => {
+        try {
+            stream = await navigator.mediaDevices.getUserMedia({ video: true, audio: false });
+            video.srcObject = stream;
+            video.style.display = 'block';
+            photoPreview.style.display = 'none';
+            placeholder.style.display = 'none';
+            btnAbrir.classList.add('d-none');
+            btnCapturar.classList.remove('d-none');
+        } catch (err) {
+            console.error("Erro ao acessar a webcam: ", err);
+            alert("Não foi possível acessar a webcam. Verifique as permissões.");
+        }
+    });
+
+    btnCapturar.addEventListener('click', () => {
+        canvas.width = video.videoWidth;
+        canvas.height = video.videoHeight;
+        canvas.getContext('2d').drawImage(video, 0, 0);
+        
+        const dataUrl = canvas.toDataURL('image/jpeg');
+        inputFoto.value = dataUrl;
+        photoPreview.src = dataUrl;
+        
+        photoPreview.style.display = 'block';
+        video.style.display = 'none';
+        btnCapturar.classList.add('d-none');
+        btnResetar.classList.remove('d-none');
+        
+        if (stream) {
+            stream.getTracks().forEach(track => track.stop());
+        }
+    });
+
+    btnResetar.addEventListener('click', () => {
+        inputFoto.value = '';
+        photoPreview.style.display = 'none';
+        placeholder.style.display = 'flex';
+        btnResetar.classList.add('d-none');
+        btnAbrir.classList.remove('d-none');
+    });
 </script>
 </body>
 </html>
