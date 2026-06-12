@@ -2,6 +2,7 @@ package com.estrela.cbms.controller;
 
 import com.estrela.cbms.model.*;
 import com.estrela.cbms.service.ResponsavelService;
+import lombok.extern.log4j.Log4j2;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
@@ -16,6 +17,7 @@ import org.springframework.web.bind.annotation.RequestParam;
 import jakarta.validation.Valid;
 import org.springframework.validation.BindingResult;
 
+@Log4j2
 @Controller
 public class ViewController {
 
@@ -30,7 +32,7 @@ public class ViewController {
         } else {
             lista = responsavelService.listarTodos();
         }
-        System.out.println("DEBUG: Listando responsáveis. Quantidade encontrada: " + (lista != null ? lista.size() : "null"));
+        log.debug("Listando responsáveis. Quantidade encontrada: " + (lista != null ? lista.size() : "null"));
         model.addAttribute("responsaveis", lista);
         model.addAttribute("termoBusca", busca);
         return "index";
@@ -73,12 +75,12 @@ public class ViewController {
             return "redirect:/novo";
         }
         try {
-            System.out.println("DEBUG: Tentando salvar responsável: " + responsavel.getNomeCompleto());
+            log.debug("Tentando salvar responsável: " + responsavel.getNomeCompleto());
             responsavelService.salvar(responsavel);
-            System.out.println("DEBUG: Responsável salvo com sucesso!");
+            log.debug("Responsável salvo com sucesso!");
             redirectAttributes.addFlashAttribute("sucesso", "Responsável cadastrado com sucesso!");
         } catch (Exception e) {
-            System.err.println("DEBUG: Erro ao salvar responsável: " + e.getMessage());
+            log.debug("Erro ao salvar responsável: " + e.getMessage());
             e.printStackTrace();
             redirectAttributes.addFlashAttribute("erro", e.getMessage());
             return "redirect:/novo";
