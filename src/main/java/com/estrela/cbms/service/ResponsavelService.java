@@ -29,6 +29,20 @@ public class ResponsavelService {
                 throw new RuntimeException("Já existe um responsável cadastrado com este CPF.");
             }
         }
+
+        // Gerar código de barras automaticamente se não existir
+        if (responsavel.getCodigoBarras() == null || responsavel.getCodigoBarras().trim().isEmpty()) {
+            responsavel.setCodigoBarras("EST" + System.currentTimeMillis());
+        } else {
+            // Se informado manualmente, validar unicidade
+            Optional<Responsavel> existenteCodigo = responsavelRepository.findByCodigoBarras(responsavel.getCodigoBarras().trim());
+            if (existenteCodigo.isPresent()) {
+                if (responsavel.getId() == null || !existenteCodigo.get().getId().equals(responsavel.getId())) {
+                    throw new RuntimeException("Já existe um responsável cadastrado com este Código de Barras.");
+                }
+            }
+        }
+
         return responsavelRepository.save(responsavel);
     }
 
@@ -44,11 +58,18 @@ public class ResponsavelService {
         return responsavelRepository.findAll();
     }
 
+    public Optional<Responsavel> buscarPorCodigoBarras(String codigoBarras) {
+        if (codigoBarras == null || codigoBarras.isBlank()) {
+            return Optional.empty();
+        }
+        return responsavelRepository.findByCodigoBarras(codigoBarras.trim());
+    }
+
     public List<Responsavel> buscar(String termo) {
         if (termo == null || termo.isBlank()) {
             return listarTodos();
         }
-        return responsavelRepository.findByNomeCompletoContainingIgnoreCaseOrCpfContaining(termo, termo);
+        return responsavelRepository.findByNomeCompletoContainingIgnoreCaseOrCpfContainingOrCodigoBarrasContaining(termo, termo, termo);
     }
 
     public Responsavel buscarPorId(Long id) {

@@ -28,6 +28,11 @@ public class ViewController {
     public String index(@RequestParam(required = false) String busca, Model model) {
         java.util.List<Responsavel> lista;
         if (busca != null && !busca.isBlank()) {
+            // Tenta buscar por código de barras exato para redirecionamento imediato
+            java.util.Optional<Responsavel> porCodigo = responsavelService.buscarPorCodigoBarras(busca.trim());
+            if (porCodigo.isPresent()) {
+                return "redirect:/perfil/" + porCodigo.get().getId();
+            }
             lista = responsavelService.buscar(busca);
         } else {
             lista = responsavelService.listarTodos();
@@ -89,10 +94,13 @@ public class ViewController {
     }
 
     @PostMapping("/coleta/{cpf}")
-    public String registrarColeta(@PathVariable String cpf, RedirectAttributes redirectAttributes) {
+    public String registrarColeta(@PathVariable String cpf, @RequestParam(required = false) Boolean noPerfil, RedirectAttributes redirectAttributes) {
         try {
-            responsavelService.registrarColeta(cpf);
+            Coleta coleta = responsavelService.registrarColeta(cpf);
             redirectAttributes.addFlashAttribute("sucesso", "Coleta registrada com sucesso!");
+            if (Boolean.TRUE.equals(noPerfil) && coleta.getResponsavel() != null) {
+                return "redirect:/perfil/" + coleta.getResponsavel().getId();
+            }
         } catch (Exception e) {
             redirectAttributes.addFlashAttribute("erro", e.getMessage());
         }

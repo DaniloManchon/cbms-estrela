@@ -16,14 +16,29 @@
             </div>
             <div>
                 <h2 th:text="${responsavel.nomeCompleto}" class="mb-0">Nome do Responsável</h2>
-                <p class="text-muted mb-0">CPF: <span th:text="${responsavel.cpf}"></span> | Celular: <span th:text="${responsavel.celular}"></span></p>
+                <p class="text-muted mb-2">CPF: <span th:text="${responsavel.cpf}"></span> | Celular: <span th:text="${responsavel.celular}"></span></p>
+                <div th:if="${responsavel.codigoBarras}" class="d-flex align-items-center gap-3">
+                    <div>
+                        <svg id="barcode"></svg>
+                        <span class="d-block text-muted small mt-1" style="font-family: monospace; font-size: 0.85rem;" th:text="${responsavel.codigoBarras}"></span>
+                    </div>
+                    <button onclick="imprimirCodigoBarras()" class="btn btn-sm btn-outline-secondary" title="Imprimir Código de Barras">
+                        <i class="bi bi-printer"></i> Imprimir
+                    </button>
+                </div>
             </div>
         </div>
-        <div class="text-end">
-            <a th:href="@{/editar/{id}(id=${responsavel.id})}" class="btn btn-outline-primary mb-2">
+        <div class="text-end" style="min-width: 180px;">
+            <form th:action="@{'/coleta/' + ${responsavel.cpf}}" method="post" class="d-block mb-2">
+                <input type="hidden" name="noPerfil" value="true">
+                <button type="submit" class="btn btn-success w-100">
+                    <i class="bi bi-cart-check"></i> Registrar Coleta
+                </button>
+            </form>
+            <a th:href="@{/editar/{id}(id=${responsavel.id})}" class="btn btn-outline-primary mb-2 w-100">
                 <i class="bi bi-pencil"></i> Editar Cadastro
             </a><br>
-            <span class="badge bg-primary fs-6" th:text="${responsavel.coletas.size() + ' Cestas'}"></span>
+            <span class="badge bg-primary fs-6 w-100 py-2" th:text="${responsavel.coletas.size() + ' Cestas'}"></span>
         </div>
     </div>
 
@@ -168,5 +183,41 @@
     </div>
 </div>
 <div th:replace="~{fragments :: scripts}"></div>
+<script th:inline="javascript">
+    document.addEventListener("DOMContentLoaded", function() {
+        var cod = /*[[${responsavel.codigoBarras}]]*/ '';
+        if (cod) {
+            JsBarcode("#barcode", cod, {
+                format: "CODE128",
+                width: 1.5,
+                height: 40,
+                displayValue: false
+            });
+        }
+    });
+
+    function imprimirCodigoBarras() {
+        var win = window.open('', '_blank');
+        win.document.write('<html><head><title>Imprimir Código de Barras</title></head><body style="display:flex; justify-content:center; align-items:center; height:100vh; flex-direction:column; margin:0;">');
+        win.document.write('<div style="text-align:center; font-family: sans-serif; border: 1px dashed #ccc; padding: 30px; border-radius: 10px; background: white; max-width: 400px;">');
+        
+        // 1ª Linha: Nome do projeto
+        win.document.write('<div style="font-size: 1.2rem; font-weight: bold; margin-bottom: 5px; color: #555;">ONG Estrela - CBMS</div>');
+        
+        // 2ª Linha: Nome do responsável
+        win.document.write('<div style="font-size: 1.6rem; font-weight: bold; margin-bottom: 20px; color: #000; word-break: break-word;">' + /*[[${responsavel.nomeCompleto}]]*/ 'Nome do Responsável' + '</div>');
+        
+        // 3ª Linha: Código de barras gráfico
+        win.document.write('<div style="margin-bottom: 10px; display: flex; justify-content: center;">' + document.getElementById('barcode').outerHTML + '</div>');
+        
+        // 4ª Linha: Código de barras de maneira legível
+        win.document.write('<div style="font-family: monospace; font-size: 1.2rem; letter-spacing: 3px; font-weight: bold; color: #333;">' + /*[[${responsavel.codigoBarras}]]*/ 'CODIGO123' + '</div>');
+        
+        win.document.write('</div>');
+        win.document.write('<script>window.onload = function() { window.print(); window.close(); }<\/script>');
+        win.document.write('</body></html>');
+        win.document.close();
+    }
+</script>
 </body>
 </html>

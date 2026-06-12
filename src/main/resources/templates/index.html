@@ -15,7 +15,7 @@
         <div class="col-md-6">
             <form th:action="@{/}" method="get" class="d-flex">
                 <input type="text" name="busca" th:value="${termoBusca}" 
-                       class="form-control me-2" placeholder="Buscar por Nome ou CPF...">
+                       class="form-control me-2" placeholder="Buscar por Nome, CPF ou Código de Barras..." autofocus>
                 <button type="submit" class="btn btn-outline-secondary">Buscar</button>
                 <a th:if="${termoBusca}" href="/" class="btn btn-link text-decoration-none">Limpar</a>
             </form>

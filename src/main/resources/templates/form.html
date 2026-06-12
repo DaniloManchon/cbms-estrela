@@ -14,19 +14,29 @@
         <!-- Tabs Nav -->
         <ul class="nav nav-tabs" id="formTabs" role="tablist">
             <li class="nav-item" role="presentation">
-                <button class="nav-link active" id="dados-tab" data-bs-toggle="tab" data-bs-target="#dados" type="button" role="tab">Dados Pessoais</button>
+                <button class="nav-link active" id="dados-tab" data-bs-toggle="tab" data-bs-target="#dados" type="button" role="tab">
+                    Dados Pessoais <span class="tab-status-badge ms-1"></span>
+                </button>
             </li>
             <li class="nav-item" role="presentation">
-                <button class="nav-link" id="moradia-tab" data-bs-toggle="tab" data-bs-target="#moradia" type="button" role="tab">Moradia</button>
+                <button class="nav-link" id="moradia-tab" data-bs-toggle="tab" data-bs-target="#moradia" type="button" role="tab">
+                    Moradia <span class="tab-status-badge ms-1"></span>
+                </button>
             </li>
             <li class="nav-item" role="presentation">
-                <button class="nav-link" id="renda-tab" data-bs-toggle="tab" data-bs-target="#renda" type="button" role="tab">Renda</button>
+                <button class="nav-link" id="renda-tab" data-bs-toggle="tab" data-bs-target="#renda" type="button" role="tab">
+                    Renda <span class="tab-status-badge ms-1"></span>
+                </button>
             </li>
             <li class="nav-item" role="presentation">
-                <button class="nav-link" id="educacao-tab" data-bs-toggle="tab" data-bs-target="#educacao" type="button" role="tab">Educação e Bens</button>
+                <button class="nav-link" id="educacao-tab" data-bs-toggle="tab" data-bs-target="#educacao" type="button" role="tab">
+                    Educação e Bens <span class="tab-status-badge ms-1"></span>
+                </button>
             </li>
             <li class="nav-item" role="presentation">
-                <button class="nav-link" id="familia-tab" data-bs-toggle="tab" data-bs-target="#familia" type="button" role="tab">Família</button>
+                <button class="nav-link" id="familia-tab" data-bs-toggle="tab" data-bs-target="#familia" type="button" role="tab">
+                    Família <span class="tab-status-badge ms-1"></span>
+                </button>
             </li>
         </ul>
 
@@ -90,6 +100,12 @@
                                     </button>
                                     <input type="date" id="datePicker" style="position: absolute; top: 0; left: 0; opacity: 0; width: 1px; height: 1px; pointer-events: none;">
                                 </div>
+                            </div>
+                        </div>
+                        <div class="row" th:if="${responsavel.id != null}">
+                            <div class="col-md-12 mb-3">
+                                <label class="form-label">Código de Barras</label>
+                                <input type="text" th:field="*{codigoBarras}" class="form-control" placeholder="Código de Barras do responsável">
                             </div>
                         </div>
                     </div>
@@ -495,6 +511,93 @@
         placeholder.style.display = 'flex';
         btnResetar.classList.add('d-none');
         btnAbrir.classList.remove('d-none');
+        atualizarStatusAbas();
+    });
+
+    // Função para atualizar os indicadores visuais das abas
+    function atualizarStatusAbas() {
+        const tabs = [
+            { tabId: 'dados-tab', paneId: 'dados' },
+            { tabId: 'moradia-tab', paneId: 'moradia' },
+            { tabId: 'renda-tab', paneId: 'renda' },
+            { tabId: 'educacao-tab', paneId: 'educacao' },
+            { tabId: 'familia-tab', paneId: 'familia' }
+        ];
+
+        tabs.forEach(t => {
+            const pane = document.getElementById(t.paneId);
+            const tabBtn = document.getElementById(t.tabId);
+            if (!pane || !tabBtn) return;
+
+            const fields = Array.from(pane.querySelectorAll('input, select, textarea'));
+            
+            // Filtra campos válidos: ignora helper sem name, hidden, checkboxes, radios, botões e campos dentro de containers d-none
+            const validFields = fields.filter(f => {
+                if (!f.name) {
+                    return false;
+                }
+                if (f.type === 'hidden' || f.type === 'checkbox' || f.type === 'radio' || f.type === 'button' || f.type === 'submit') {
+                    return false;
+                }
+                // Ignora se estiver dentro de um container oculto com 'd-none' (ex: outra fonte de renda)
+                if (f.closest('.d-none')) {
+                    return false;
+                }
+                return true;
+            });
+
+            let emptyRequiredCount = 0;
+            let emptyOptionalCount = 0;
+
+            validFields.forEach(f => {
+                const val = f.value ? f.value.trim() : '';
+                if (val === '') {
+                    if (f.hasAttribute('required')) {
+                        emptyRequiredCount++;
+                    } else {
+                        // Ignora campos tipicamente opcionais como observações ou complemento
+                        const id = f.id || '';
+                        const name = f.name || '';
+                        const placeholderText = f.placeholder || '';
+                        if (id !== 'obs' && !placeholderText.includes('Opcional') && !name.includes('complemento')) {
+                            emptyOptionalCount++;
+                        }
+                    }
+                }
+            });
+
+            if (t.paneId === 'familia') {
+                const rows = pane.querySelectorAll('#membrosCorpo tr');
+                if (rows.length === 0) {
+                    emptyOptionalCount = 1;
+                }
+            }
+
+            const badgeSpan = tabBtn.querySelector('.tab-status-badge');
+            if (badgeSpan) {
+                if (emptyRequiredCount > 0) {
+                    badgeSpan.innerHTML = `<span class="d-inline-block rounded-circle bg-danger ms-1" style="width: 8px; height: 8px; vertical-align: middle;" title="${emptyRequiredCount} campo(s) obrigatório(s) pendente(s)"></span>`;
+                } else if (emptyOptionalCount > 0) {
+                    badgeSpan.innerHTML = `<span class="d-inline-block rounded-circle bg-warning ms-1" style="width: 8px; height: 8px; vertical-align: middle;" title="${emptyOptionalCount} campo(s) opcional(ais) vazio(s)"></span>`;
+                } else {
+                    badgeSpan.innerHTML = `<span class="d-inline-block rounded-circle bg-success ms-1" style="width: 8px; height: 8px; vertical-align: middle;" title="Todos os campos preenchidos"></span>`;
+                }
+            }
+        });
+    }
+
+    // Inicialização e escuta de eventos para o formulário
+    document.addEventListener('DOMContentLoaded', () => {
+        atualizarStatusAbas();
+        
+        const formEl = document.getElementById('responsavelForm');
+        if (formEl) {
+            formEl.addEventListener('input', atualizarStatusAbas);
+            formEl.addEventListener('change', atualizarStatusAbas);
+            formEl.addEventListener('click', () => {
+                setTimeout(atualizarStatusAbas, 100);
+            });
+        }
     });
 </script>
 </body>

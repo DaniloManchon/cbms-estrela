@@ -5,6 +5,7 @@ import jakarta.persistence.*;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Pattern;
 import lombok.*;
+import org.hibernate.annotations.BatchSize;
 
 import java.util.List;
 import java.util.Objects;
@@ -33,6 +34,10 @@ public class Responsavel {
 
     @JsonProperty("data_nascimento")
     private String dataNascimento;
+
+    @Column(unique = true)
+    @JsonProperty("codigo_barras")
+    private String codigoBarras;
 
     @Lob
     @Column(columnDefinition = "LONGTEXT")
