@@ -72,15 +72,27 @@ class ResponsavelServiceTest {
     }
 
     @Test
-    @DisplayName("Deve permitir atualizar o mesmo responsável mantendo o CPF")
-    void atualizarMesmoResponsavel() {
-        when(responsavelRepository.findByCpf(anyString())).thenReturn(Optional.of(responsavel));
-        when(responsavelRepository.save(any(Responsavel.class))).thenReturn(responsavel);
+    @DisplayName("Deve permitir atualizar o mesmo responsável mantendo o CPF e preservando coletas")
+    void atualizarMesmoResponsavelPreservandoColetas() {
+        List<Coleta> coletasExistentes = List.of(new Coleta());
+        responsavel.setColetas(coletasExistentes);
 
-        Responsavel salvo = responsavelService.salvar(responsavel);
+        when(responsavelRepository.findById(1L)).thenReturn(Optional.of(responsavel));
+        when(responsavelRepository.findByCpf(anyString())).thenReturn(Optional.of(responsavel));
+        when(responsavelRepository.save(any(Responsavel.class))).thenAnswer(invocation -> invocation.getArgument(0));
+
+        Responsavel paraAtualizar = new Responsavel();
+        paraAtualizar.setId(1L);
+        paraAtualizar.setNomeCompleto("João da Silva Atualizado");
+        paraAtualizar.setCpf("123.456.789-00");
+        paraAtualizar.setColetas(null); // Simulando o que vem do formulário
+
+        Responsavel salvo = responsavelService.salvar(paraAtualizar);
 
         assertNotNull(salvo);
-        verify(responsavelRepository, times(1)).save(responsavel);
+        assertEquals(coletasExistentes, salvo.getColetas());
+        assertEquals("João da Silva Atualizado", salvo.getNomeCompleto());
+        verify(responsavelRepository, times(1)).save(paraAtualizar);
     }
 
     @Test

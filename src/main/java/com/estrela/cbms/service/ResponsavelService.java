@@ -21,6 +21,13 @@ public class ResponsavelService {
     private ColetaRepository coletaRepository;
 
     public Responsavel salvar(Responsavel responsavel) {
+        if (responsavel.getId() != null) {
+            Responsavel atual = responsavelRepository.findById(responsavel.getId())
+                    .orElseThrow(() -> new RuntimeException("Responsável não encontrado para atualização."));
+            // Preserva a lista de coletas que não vem do formulário
+            responsavel.setColetas(atual.getColetas());
+        }
+
         Optional<Responsavel> existente = responsavelRepository.findByCpf(responsavel.getCpf());
         
         if (existente.isPresent()) {

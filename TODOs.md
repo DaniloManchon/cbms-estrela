@@ -9,5 +9,5 @@
 4. [ ] Realizar teste com leitor de código de barras
 5. [x] Modificar H2 para usar arquivo de dados
 6. [ ] Gerar identidade visual
-7. [ ] Corrigir bug de perder coletas ao realizar update no perfil de responsavel
-8. [ ] Remover campo de observação em coletas
+7. [x] Corrigir bug de perder coletas ao realizar update no perfil de responsavel
+8. [x] Remover campo de observação em coletas

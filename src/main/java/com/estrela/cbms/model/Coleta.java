@@ -23,8 +23,6 @@ public class Coleta {
 
     private LocalDateTime dataColeta;
 
-    private String observacao;
-
     @ManyToOne
     @JoinColumn(name = "responsavel_id")
     @JsonIgnore // Evita loop infinito no JSON
