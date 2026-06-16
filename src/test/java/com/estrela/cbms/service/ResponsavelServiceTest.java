@@ -125,7 +125,7 @@ class ResponsavelServiceTest {
     @DisplayName("Deve buscar responsáveis por termo de pesquisa")
     void buscarPorTermo() {
         List<Responsavel> lista = List.of(responsavel);
-        when(responsavelRepository.findByNomeCompletoContainingIgnoreCaseOrCpfContaining("João", "João"))
+        when(responsavelRepository.findByNomeCompletoContainingIgnoreCaseOrCpfContainingOrCodigoBarrasContaining("João","João","João"))
                 .thenReturn(lista);
 
         List<Responsavel> resultado = responsavelService.buscar("João");
