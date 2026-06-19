@@ -44,6 +44,7 @@ class ResponsavelServiceTest {
     @Test
     @DisplayName("Deve salvar um novo responsável com sucesso")
     void salvarComSucesso() {
+        responsavel.setId(null);
         when(responsavelRepository.findByCpf(anyString())).thenReturn(Optional.empty());
         when(responsavelRepository.save(any(Responsavel.class))).thenReturn(responsavel);
 
@@ -57,6 +58,7 @@ class ResponsavelServiceTest {
     @Test
     @DisplayName("Deve lançar exceção ao salvar responsável com CPF já cadastrado")
     void salvarComCpfDuplicado() {
+        responsavel.setId(null);
         Responsavel outroResponsavel = new Responsavel();
         outroResponsavel.setId(2L);
         outroResponsavel.setCpf("123.456.789-00");

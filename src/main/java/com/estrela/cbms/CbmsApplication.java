@@ -30,6 +30,11 @@ public class CbmsApplication {
 
 	@EventListener(ApplicationReadyEvent.class)
 	public void openBrowserAfterStartup() {
+		// Verifica se o Maven está executando testes (via Surefire plugin)
+		if (System.getProperty("surefire.test.class.path") != null) {
+			return;
+		}
+
 		String url = "http://localhost:" + serverPort;
 
 		try {
