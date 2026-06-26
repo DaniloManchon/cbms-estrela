@@ -48,7 +48,7 @@ public class ViewController {
         Responsavel responsavel = new Responsavel();
         responsavelService.inicializarObjetosAninhados(responsavel);
         model.addAttribute("responsavel", responsavel);
-        return "form";
+            return "cadastro_responsavel";
     }
 
     @GetMapping("/editar/{id}")
@@ -56,7 +56,7 @@ public class ViewController {
         try {
             Responsavel responsavel = responsavelService.buscarPorId(id);
             model.addAttribute("responsavel", responsavel);
-            return "form";
+        return "cadastro_responsavel";
         } catch (Exception e) {
             return "redirect:/?erro=Responsavel nao encontrado";
         }
@@ -66,7 +66,7 @@ public class ViewController {
     public String perfil(@PathVariable Long id, Model model) {
         try {
             model.addAttribute("responsavel", responsavelService.buscarPorId(id));
-            return "perfil";
+            return "perfil_responsavel";
         } catch (Exception e) {
             return "redirect:/?erro=Responsavel nao encontrado";
         }

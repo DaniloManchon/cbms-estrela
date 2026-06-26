@@ -1,6 +1,6 @@
 <!DOCTYPE html>
 <html xmlns:th="http://www.thymeleaf.org">
-<head th:replace="~{fragments :: head('Gestão de Beneficiários')}"></head>
+<head th:replace="~{fragmentos_comuns :: head('Gestão de Beneficiários')}"></head>
 <body>
 <div class="container-main">
 <div class="d-flex justify-content-between align-items-center mb-4">
@@ -27,7 +27,7 @@
         </div>
     </div>
 
-    <div th:replace="~{fragments :: alerts}"></div>
+    <div th:replace="~{fragmentos_comuns :: alerts}"></div>
 
     <div class="table-responsive">
         <table class="table table-hover">
@@ -76,7 +76,7 @@
         </table>
     </div>
 </div>
-<div th:replace="~{fragments :: scripts}"></div>
+<div th:replace="~{fragmentos_comuns :: scripts}"></div>
 <script>
     document.getElementById('shutdownButton').addEventListener('click', function() {
         if (confirm('Tem certeza que deseja encerrar o sistema?')) {
