@@ -1,0 +1,104 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{fragmentos_comuns :: head('Gestão de Beneficiários')}"></head>
+<body>
+<div class="container-main">
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <h1>ONG Estrela - CBMS</h1>
+    <div>
+        <button id="shutdownButton" class="btn btn-danger me-2">
+            <i class="bi bi-power"></i>
+        </button>
+        <a href="/novo" class="btn btn-primary">
+            <i class="bi bi-person-plus"></i> Novo Responsável
+        </a>
+    </div>
+</div>
+
+    <!-- Formulário de Busca -->
+    <div class="row mb-4">
+        <div class="col-md-6">
+            <form th:action="@{/}" method="get" class="d-flex">
+                <input type="text" name="busca" th:value="${termoBusca}" 
+                       class="form-control me-2" placeholder="Buscar por Nome, CPF ou Código de Barras..." autofocus>
+                <button type="submit" class="btn btn-outline-secondary">Buscar</button>
+                <a th:if="${termoBusca}" href="/" class="btn btn-link text-decoration-none">Limpar</a>
+            </form>
+        </div>
+    </div>
+
+    <div th:replace="~{fragmentos_comuns :: alerts}"></div>
+
+    <div class="table-responsive">
+        <table class="table table-hover">
+            <thead class="table-light">
+            <tr>
+                <th>Nome</th>
+                <th>CPF</th>
+                <th>Última Coleta</th>
+                <th>Total</th>
+                <th class="text-center">Ações</th>
+            </tr>
+            </thead>
+            <tbody>
+            <tr th:each="r : ${responsaveis}">
+                <td class="align-middle">
+                    <a th:href="@{'/perfil/' + ${r.id}}" th:text="${r.nomeCompleto}" class="text-decoration-none fw-bold"></a>
+                </td>
+                <td class="align-middle" th:text="${r.cpf}"></td>
+                <td class="align-middle">
+                    <span th:if="${r.coletas != null and !r.coletas.empty}" 
+                          th:text="${#temporals.format(r.coletas[0].dataColeta, 'dd/MM/yyyy HH:mm')}">
+                    </span>
+                    <span th:unless="${r.coletas != null and !r.coletas.empty}" class="text-muted small">Nenhuma</span>
+                </td>
+                <td class="align-middle" th:text="${r.coletas != null ? r.coletas.size() : 0}"></td>
+                <td class="text-center align-middle">
+                    <div class="btn-group" role="group">
+                        <form th:action="@{'/coleta/' + ${r.cpf}}" method="post" style="display:inline;">
+                            <button type="submit" class="btn btn-sm btn-success" title="Registrar Coleta">
+                                <i class="bi bi-cart-check"></i>
+                            </button>
+                        </form>
+                        <a th:href="@{'/editar/' + ${r.id}}" class="btn btn-sm btn-outline-primary ms-1" title="Editar">
+                            <i class="bi bi-pencil"></i>
+                        </a>
+                        <a th:href="@{'/perfil/' + ${r.id}}" class="btn btn-sm btn-outline-secondary ms-1" title="Ver Perfil">
+                            <i class="bi bi-eye"></i>
+                        </a>
+                    </div>
+                </td>
+            </tr>
+            <tr th:if="${responsaveis == null or responsaveis.empty}">
+                <td colspan="5" class="text-center py-4 text-muted">Nenhum responsável encontrado.</td>
+            </tr>
+            </tbody>
+        </table>
+    </div>
+</div>
+<div th:replace="~{fragmentos_comuns :: scripts}"></div>
+<script>
+    document.getElementById('shutdownButton').addEventListener('click', function() {
+        if (confirm('Tem certeza que deseja encerrar o sistema?')) {
+            fetch('/shutdown', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                }
+            })
+            .then(response => {
+                if (response.ok) {
+                    alert('Sistema está sendo encerrado.');
+                } else {
+                    alert('Erro ao tentar encerrar o sistema.');
+                }
+            })
+            .catch(error => {
+                console.error('Erro:', error);
+                alert('Erro de comunicação com o servidor.');
+            });
+        }
+    });
+</script>
+</body>
+</html>

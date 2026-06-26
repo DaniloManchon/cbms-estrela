@@ -1,0 +1,209 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{fragmentos_comuns :: head('Perfil do Responsável')}"></head>
+<body>
+<div class="container-main">
+    <div th:replace="~{fragmentos_comuns :: alerts}"></div>
+    
+    <!-- Header -->
+    <div class="d-flex justify-content-between align-items-start mb-4">
+        <div class="d-flex align-items-center">
+            <div class="me-4">
+                <img th:if="${responsavel.foto}" th:src="${responsavel.foto}" class="rounded-3 border shadow-sm" style="width: 150px; height: 150px; object-fit: cover;">
+                <div th:unless="${responsavel.foto}" class="rounded-3 bg-light d-flex align-items-center justify-content-center border shadow-sm" style="width: 150px; height: 150px;">
+                    <i class="bi bi-person fs-1 text-secondary"></i>
+                </div>
+            </div>
+            <div>
+                <h2 th:text="${responsavel.nomeCompleto}" class="mb-0">Nome do Responsável</h2>
+                <p class="text-muted mb-2">CPF: <span th:text="${responsavel.cpf}"></span> | Celular: <span th:text="${responsavel.celular}"></span></p>
+                <div th:if="${responsavel.codigoBarras}" class="d-flex align-items-center gap-3">
+                    <div>
+                        <svg id="barcode"></svg>
+                        <span class="d-block text-muted small mt-1" style="font-family: monospace; font-size: 0.85rem;" th:text="${responsavel.codigoBarras}"></span>
+                    </div>
+                    <button onclick="imprimirCodigoBarras()" class="btn btn-sm btn-outline-secondary" title="Imprimir Código de Barras">
+                        <i class="bi bi-printer"></i> Imprimir
+                    </button>
+                </div>
+            </div>
+        </div>
+        <div class="text-end" style="min-width: 180px;">
+            <form th:action="@{'/coleta/' + ${responsavel.cpf}}" method="post" class="d-block mb-2">
+                <input type="hidden" name="noPerfil" value="true">
+                <button type="submit" class="btn btn-success w-100">
+                    <i class="bi bi-cart-check"></i> Registrar Coleta
+                </button>
+            </form>
+            <a th:href="@{/editar/{id}(id=${responsavel.id})}" class="btn btn-outline-primary mb-2 w-100">
+                <i class="bi bi-pencil"></i> Editar Cadastro
+            </a><br>
+            <span class="badge bg-primary fs-6 w-100 py-2" th:text="${responsavel.coletas.size() + ' Cestas'}"></span>
+        </div>
+    </div>
+
+    <!-- Main Content Tabs/Sections -->
+    <div class="row">
+        <!-- Left Column: Personal and Family -->
+        <div class="col-md-7">
+            <div class="card">
+                <div class="card-header"><i class="bi bi-person-fill"></i> Dados Pessoais</div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-6 mb-2">
+                            <label class="text-muted small d-block">Data de Nascimento</label>
+                            <span class="fw-medium" th:text="${responsavel.dataNascimento != null ? responsavel.dataNascimento : '-'}"></span>
+                        </div>
+                        <div class="col-6 mb-2">
+                            <label class="text-muted small d-block">Escolaridade</label>
+                            <span class="fw-medium" th:text="${responsavel.educacaoBens.escolaridadeResponsavel != null ? responsavel.educacaoBens.escolaridadeResponsavel : '-'}"></span>
+                        </div>
+                    </div>
+                    <div th:if="${responsavel.obs}" class="mt-2">
+                        <label class="text-muted small d-block">Observações</label>
+                        <p class="small mb-0" th:text="${responsavel.obs}"></p>
+                    </div>
+                </div>
+            </div>
+
+            <div class="card">
+                <div class="card-header"><i class="bi bi-people-fill"></i> Composição Familiar</div>
+                <div class="card-body p-0">
+                    <table class="table table-sm table-hover mb-0">
+                        <thead class="table-light">
+                            <tr>
+                                <th class="ps-3">Nome</th>
+                                <th>Parentesco</th>
+                                <th>Nasc.</th>
+                                <th>Ocupação</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr th:each="membro : ${responsavel.identificacaoFamiliar}">
+                                <td class="ps-3" th:text="${membro.nomeCompleto}"></td>
+                                <td th:text="${membro.parentesco}"></td>
+                                <td th:text="${membro.dataNascimento}"></td>
+                                <td th:text="${membro.ocupacaoEscola}"></td>
+                            </tr>
+                            <tr th:if="${responsavel.identificacaoFamiliar == null or responsavel.identificacaoFamiliar.empty}">
+                                <td colspan="4" class="text-center py-3 text-muted">Nenhum outro membro cadastrado.</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <div class="card">
+                <div class="card-header"><i class="bi bi-clock-history"></i> Histórico de Retiradas</div>
+                <div class="card-body">
+                    <div th:if="${responsavel.coletas == null or responsavel.coletas.empty}" class="alert alert-light border mb-0 text-center">
+                        Nenhuma retirada registrada até o momento.
+                    </div>
+                    <ul class="list-group list-group-flush" th:unless="${responsavel.coletas == null or responsavel.coletas.empty}">
+                        <li class="list-group-item d-flex justify-content-between align-items-center px-0" 
+                            th:each="coleta : ${responsavel.coletas}">
+                            <div>
+                                <i class="bi bi-calendar-check text-success"></i>
+                                <span th:text="${#temporals.format(coleta.dataColeta, 'dd/MM/yyyy ''às'' HH:mm')}"></span>
+                            </div>
+                        </li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+
+        <!-- Right Column: Housing, Income, Assets -->
+        <div class="col-md-5">
+            <div class="card">
+                <div class="card-header"><i class="bi bi-house-door-fill"></i> Moradia e Endereço</div>
+                <div class="card-body">
+                    <p class="fw-bold mb-1">
+                        <span th:text="${responsavel.moradia.endereco.logradouro + ', ' + responsavel.moradia.endereco.numero}"></span>
+                        <span th:if="${responsavel.moradia.endereco.complemento}" th:text="${' - ' + responsavel.moradia.endereco.complemento}"></span>
+                    </p>
+                    <p class="small text-muted mb-3" th:text="${responsavel.moradia.endereco.bairro + ' - ' + responsavel.moradia.endereco.localidade + '/' + responsavel.moradia.endereco.uf + ' (CEP: ' + responsavel.moradia.endereco.cep + ')'}"></p>
+                    <div class="row">
+                        <div class="col-6 mb-2">
+                            <label class="text-muted small d-block">Tipo</label>
+                            <span class="fw-medium" th:text="${responsavel.moradia.tipo}"></span>
+                        </div>
+                        <div class="col-6 mb-2">
+                            <label class="text-muted small d-block">Cômodos</label>
+                            <span class="fw-medium" th:text="${responsavel.moradia.numeroComodos}"></span>
+                        </div>
+                    </div>
+                    <hr class="my-2">
+                    <div class="row small">
+                        <div class="col-6 mb-1"><strong>Água:</strong> <span th:text="${responsavel.moradia.servicos.agua}"></span></div>
+                        <div class="col-6 mb-1"><strong>Esgoto:</strong> <span th:text="${responsavel.moradia.servicos.esgoto}"></span></div>
+                        <div class="col-6 mb-1"><strong>Lixo:</strong> <span th:text="${responsavel.moradia.servicos.lixo}"></span></div>
+                        <div class="col-6 mb-1"><strong>Luz:</strong> <span th:text="${responsavel.moradia.servicos.eletricidade}"></span></div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="card border-success">
+                <div class="card-header bg-success text-white"><i class="bi bi-cash-coin"></i> Renda e Benefícios</div>
+                <div class="card-body">
+                    <div class="mb-3 text-center">
+                        <label class="text-muted small d-block">Renda Bruta Familiar</label>
+                        <h3 class="text-success mb-0" th:text="${'R$ ' + responsavel.renda.rendaBruta}"></h3>
+                    </div>
+                    <hr class="my-2">
+                    <div class="small">
+                        <p class="mb-1"><strong>Fonte Principal:</strong> <span th:text="${responsavel.renda.fontesRenda.tipo}"></span></p>
+                        <p class="mb-0" th:if="${responsavel.renda.fontesRenda.outros}">
+                            <strong>Detalhes:</strong> <span th:text="${responsavel.renda.fontesRenda.outros}"></span>
+                        </p>
+                    </div>
+                </div>
+            </div>
+
+            <div class="card">
+                <div class="card-header"><i class="bi bi-box-seam-fill"></i> Bens e Outros</div>
+                <div class="card-body">
+                    <p class="mb-3"><strong>Estudantes em casa:</strong> <span class="badge bg-secondary" th:text="${responsavel.educacaoBens.qtdEstudantes}"></span></p>
+                    <div class="d-flex flex-wrap gap-2">
+                        <span th:if="${responsavel.educacaoBens.bens.geladeira}" class="badge bg-light text-dark border"><i class="bi bi-check-circle-fill text-success"></i> Geladeira</span>
+                        <span th:if="${responsavel.educacaoBens.bens.maquinaLavar}" class="badge bg-light text-dark border"><i class="bi bi-check-circle-fill text-success"></i> Máq. Lavar</span>
+                        <span th:if="${responsavel.educacaoBens.bens.computador}" class="badge bg-light text-dark border"><i class="bi bi-check-circle-fill text-success"></i> Computador</span>
+                        <span th:if="${responsavel.educacaoBens.bens.carro}" class="badge bg-light text-dark border"><i class="bi bi-check-circle-fill text-success"></i> Carro</span>
+                        <span th:if="${responsavel.educacaoBens.bens.motocicleta}" class="badge bg-light text-dark border"><i class="bi bi-check-circle-fill text-success"></i> Motocicleta</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="mt-4 text-center">
+        <a href="/" class="btn btn-secondary">
+            <i class="bi bi-arrow-left"></i> Voltar para a Lista
+        </a>
+    </div>
+</div>
+<div th:replace="~{fragmentos_comuns :: scripts}"></div>
+    <script th:src="@{/js/barcode-utils.js}"></script>
+    <script th:inline="javascript">
+        document.addEventListener("DOMContentLoaded", function() {
+            var cod = /*[[${responsavel.codigoBarras}]]*/ '';
+            if (cod) {
+                JsBarcode("#barcode", cod, {
+                    format: "CODE128",
+                    width: 2,
+                    height: 40,
+                    displayValue: false,
+                    margin: 5
+                });
+            }
+        });
+
+        function imprimirCodigoBarras() {
+            var nome = /*[[${responsavel.nomeCompleto}]]*/ '';
+            var cod = /*[[${responsavel.codigoBarras}]]*/ '';
+            var svg = document.getElementById('barcode').outerHTML;
+            imprimirCodigoBarrasExterno(nome, cod, svg);
+        }
+    </script>
+
+</body>
+</html>
