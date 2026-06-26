@@ -1,7 +1,6 @@
 package com.estrela.cbms.service;
 
-import com.estrela.cbms.model.Coleta;
-import com.estrela.cbms.model.Responsavel;
+import com.estrela.cbms.model.*;
 import com.estrela.cbms.repository.ColetaRepository;
 import com.estrela.cbms.repository.ResponsavelRepository;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -95,27 +94,27 @@ public class ResponsavelService {
 
     public void inicializarObjetosAninhados(Responsavel responsavel) {
         if (responsavel.getRenda() == null) {
-            responsavel.setRenda(new com.estrela.cbms.model.Renda());
+            responsavel.setRenda(new Renda());
         }
         if (responsavel.getRenda().getFontesRenda() == null) {
-            responsavel.getRenda().setFontesRenda(new com.estrela.cbms.model.FontesRenda());
+            responsavel.getRenda().setFontesRenda(new FontesRenda());
         }
         
         if (responsavel.getMoradia() == null) {
-            responsavel.setMoradia(new com.estrela.cbms.model.Moradia());
+            responsavel.setMoradia(new Moradia());
         }
         if (responsavel.getMoradia().getEndereco() == null) {
-            responsavel.getMoradia().setEndereco(new com.estrela.cbms.model.Endereco());
+            responsavel.getMoradia().setEndereco(new Endereco());
         }
         if (responsavel.getMoradia().getServicos() == null) {
-            responsavel.getMoradia().setServicos(new com.estrela.cbms.model.Servicos());
+            responsavel.getMoradia().setServicos(new Servicos());
         }
         
         if (responsavel.getEducacaoBens() == null) {
-            responsavel.setEducacaoBens(new com.estrela.cbms.model.EducacaoBens());
+            responsavel.setEducacaoBens(new EducacaoBens());
         }
         if (responsavel.getEducacaoBens().getBens() == null) {
-            responsavel.getEducacaoBens().setBens(new com.estrela.cbms.model.Bens());
+            responsavel.getEducacaoBens().setBens(new Bens());
         }
     }
 }
