@@ -21,8 +21,10 @@ jobs:
           distribution: 'temurin'
           cache: maven
 
-#      - name: Build and Test with Maven
-#        run: mvn -B package --file pom.xml
+      - name: Build and Test with Maven
+      # -DskipTests para pular os testes pois eles dependem de um navegador
+        run: mvn -B package -DskipTests --file pom.xml
+
 
       - name: Get short SHA
         id: vars
