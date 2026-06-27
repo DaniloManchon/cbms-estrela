@@ -15,7 +15,7 @@ import java.util.Objects;
 @NoArgsConstructor
 @AllArgsConstructor
 @Entity
-public class Responsavel {
+public class Beneficiario {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -44,7 +44,7 @@ public class Responsavel {
     private String foto;
 
     @ElementCollection
-    @CollectionTable(name = "identificacao_familiar", joinColumns = @JoinColumn(name = "responsavel_id"))
+    @CollectionTable(name = "identificacao_familiar", joinColumns = @JoinColumn(name = "beneficiario_id"))
     @JsonProperty("identificacao_familiar")
     private List<IdentificacaoFamiliar> identificacaoFamiliar;
 
@@ -67,14 +67,14 @@ public class Responsavel {
 
     private String obs;
 
-    @OneToMany(mappedBy = "responsavel", cascade = CascadeType.ALL, orphanRemoval = true)
+    @OneToMany(mappedBy = "beneficiario", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<Coleta> coletas;
 
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
-        Responsavel that = (Responsavel) o;
+        Beneficiario that = (Beneficiario) o;
         return Objects.equals(id, that.id);
     }
 

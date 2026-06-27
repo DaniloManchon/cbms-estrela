@@ -24,13 +24,13 @@ public class Coleta {
     private LocalDateTime dataColeta;
 
     @ManyToOne
-    @JoinColumn(name = "responsavel_id")
+    @JoinColumn(name = "beneficiario_id")
     @JsonIgnore // Evita loop infinito no JSON
-    private Responsavel responsavel;
+    private Beneficiario beneficiario;
 
-    public Coleta(LocalDateTime dataColeta, Responsavel responsavel) {
+    public Coleta(LocalDateTime dataColeta, Beneficiario beneficiario) {
         this.dataColeta = dataColeta;
-        this.responsavel = responsavel;
+        this.beneficiario = beneficiario;
     }
 
     @Override

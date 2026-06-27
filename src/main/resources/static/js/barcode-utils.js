@@ -1,4 +1,4 @@
-function imprimirCodigoBarrasExterno(nomeResponsavel, codigoBarras, barcodeSvgHtml) {
+function imprimirCodigoBarrasExterno(nomeBeneficiario, codigoBarras, barcodeSvgHtml) {
     var win = window.open('', '_blank');
     win.document.write('<!DOCTYPE html><html><head><title>Etiqueta</title><style>');
     win.document.write('@page { size: 9cm 6cm; margin: 2mm; }');
@@ -13,7 +13,7 @@ function imprimirCodigoBarrasExterno(nomeResponsavel, codigoBarras, barcodeSvgHt
     win.document.write('</style></head><body>');
     win.document.write('<div class="label">');
     win.document.write('<div class="projeto">ONG Estrela - CBMS</div>');
-    win.document.write('<div class="nome">' + nomeResponsavel + '</div>');
+    win.document.write('<div class="nome">' + nomeBeneficiario + '</div>');
     win.document.write('<div class="barcode-wrap">' + barcodeSvgHtml + '</div>');
     win.document.write('<div class="codigo">' + codigoBarras + '</div>');
     win.document.write('</div>');
