@@ -23,10 +23,9 @@ jobs:
           distribution: 'temurin'
 
       # 1. Incrementa a versão no pom.xml
-      # Usamos coordenadas completas para garantir que os plugins sejam baixados mesmo não estando no pom.xml
       - name: Bump Version
         run: |
-          mvn org.codehaus.mojo:build-helper-maven-plugin:3.6.0:parse-version org.codehaus.mojo:versions-maven-plugin:2.18.0:set -DnewVersion=\${parsedVersion.majorVersion}.\${parsedVersion.minorVersion}.\${parsedVersion.nextIncrementalVersion} -DgenerateBackupPoms=false
+          mvn build-helper:parse-version versions:set -DnewVersion=\${parsedVersion.majorVersion}.\${parsedVersion.minorVersion}.\${parsedVersion.nextIncrementalVersion} -DgenerateBackupPoms=false
           echo "NEW_VERSION=$(mvn help:evaluate -Dexpression=project.version -q -DforceStdout)" >> $GITHUB_ENV
 
       # 2. Commita e tagueia
