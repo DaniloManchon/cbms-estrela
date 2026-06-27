@@ -10,7 +10,7 @@
             <i class="bi bi-power"></i>
         </button>
         <a href="/novo" class="btn btn-primary">
-            <i class="bi bi-person-plus"></i> Novo Responsável
+            <i class="bi bi-person-plus"></i> Novo Beneficiário
         </a>
     </div>
 </div>
@@ -41,7 +41,7 @@
             </tr>
             </thead>
             <tbody>
-            <tr th:each="r : ${responsaveis}">
+            <tr th:each="r : ${beneficiarios}">
                 <td class="align-middle">
                     <a th:href="@{'/perfil/' + ${r.id}}" th:text="${r.nomeCompleto}" class="text-decoration-none fw-bold"></a>
                 </td>
@@ -69,8 +69,8 @@
                     </div>
                 </td>
             </tr>
-            <tr th:if="${responsaveis == null or responsaveis.empty}">
-                <td colspan="5" class="text-center py-4 text-muted">Nenhum responsável encontrado.</td>
+            <tr th:if="${beneficiarios == null or beneficiarios.empty}">
+                <td colspan="5" class="text-center py-4 text-muted">Nenhum beneficiário encontrado.</td>
             </tr>
             </tbody>
         </table>

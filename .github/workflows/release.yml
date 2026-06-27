@@ -1,39 +1,53 @@
-name: Java CI/CD and Release
+name: Release Pipeline
 
 on:
   push:
     branches: [ "main" ]
 
 jobs:
-  build-and-release:
+  release:
     runs-on: ubuntu-latest
     permissions:
-      contents: write # Permissão necessária para criar a release
+      contents: write 
 
     steps:
-      - name: Checkout code
-        uses: actions/checkout@v4
+      - uses: actions/checkout@v4
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+          fetch-depth: 0
 
       - name: Set up JDK 17
         uses: actions/setup-java@v4
         with:
           java-version: '17'
           distribution: 'temurin'
-          cache: maven
 
-      - name: Build and Test with Maven
-      # -DskipTests para pular os testes pois eles dependem de um navegador
-        run: mvn -B package -DskipTests --file pom.xml
+      # 1. Incrementa a versão no pom.xml
+      # Usamos coordenadas completas para garantir que os plugins sejam baixados mesmo não estando no pom.xml
+      - name: Bump Version
+        run: |
+          mvn org.codehaus.mojo:build-helper-maven-plugin:3.6.0:parse-version org.codehaus.mojo:versions-maven-plugin:2.18.0:set -DnewVersion=\${parsedVersion.majorVersion}.\${parsedVersion.minorVersion}.\${parsedVersion.nextIncrementalVersion} -DgenerateBackupPoms=false
+          echo "NEW_VERSION=$(mvn help:evaluate -Dexpression=project.version -q -DforceStdout)" >> $GITHUB_ENV
 
+      # 2. Commita e tagueia
+      - name: Commit version bump
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add pom.xml
+          git commit -m "chore: bump version to ${{ env.NEW_VERSION }} [skip ci]"
+          git push origin main
+          git tag v${{ env.NEW_VERSION }}
+          git push origin v${{ env.NEW_VERSION }}
 
-      - name: Get short SHA
-        id: vars
-        run: echo "sha_short=$(git rev-parse --short HEAD)" >> $GITHUB_OUTPUT
+      # 3. Builda o pacote
+      - name: Build with Maven
+        run: mvn -B package -DskipTests
 
-      - name: Release
+      # 4. Cria a Release
+      - name: Create Release
         uses: softprops/action-gh-release@v2
         with:
-          tag_name: build-${{ steps.vars.outputs.sha_short }}
-          name: Release ${{ steps.vars.outputs.sha_short }}
-          body: "Release automática do commit ${{ github.sha }}"
+          tag_name: v${{ env.NEW_VERSION }}
+          name: Release ${{ env.NEW_VERSION }}
           files: target/*.jar

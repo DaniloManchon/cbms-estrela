@@ -1,7 +1,7 @@
 package com.estrela.cbms.controller;
 
-import com.estrela.cbms.model.Responsavel;
-import com.estrela.cbms.service.ResponsavelService;
+import com.estrela.cbms.model.Beneficiario;
+import com.estrela.cbms.service.BeneficiarioService;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -23,62 +23,62 @@ class ViewControllerTest {
     private MockMvc mockMvc;
 
     @MockitoBean
-    private ResponsavelService responsavelService;
+    private BeneficiarioService beneficiarioService;
 
-    private Responsavel criarResponsavelMock() {
-        Responsavel responsavel = new Responsavel();
-        responsavel.setId(1L);
-        responsavel.setNomeCompleto("João da Silva");
-        responsavel.setCpf("191.000.000-00");
-        responsavel.setCelular("(11) 98888-8888");
-        responsavel.setColetas(Collections.emptyList());
-        responsavel.setIdentificacaoFamiliar(Collections.emptyList());
+    private Beneficiario criarBeneficiarioMock() {
+        Beneficiario beneficiario = new Beneficiario();
+        beneficiario.setId(1L);
+        beneficiario.setNomeCompleto("João da Silva");
+        beneficiario.setCpf("191.000.000-00");
+        beneficiario.setCelular("(11) 98888-8888");
+        beneficiario.setColetas(Collections.emptyList());
+        beneficiario.setIdentificacaoFamiliar(Collections.emptyList());
 
         // Inicializa objetos aninhados para evitar NullPointerException no Thymeleaf
-        responsavel.setRenda(new com.estrela.cbms.model.Renda());
-        responsavel.getRenda().setFontesRenda(new com.estrela.cbms.model.FontesRenda());
+        beneficiario.setRenda(new com.estrela.cbms.model.Renda());
+        beneficiario.getRenda().setFontesRenda(new com.estrela.cbms.model.FontesRenda());
 
-        responsavel.setMoradia(new com.estrela.cbms.model.Moradia());
-        responsavel.getMoradia().setEndereco(new com.estrela.cbms.model.Endereco());
-        responsavel.getMoradia().setServicos(new com.estrela.cbms.model.Servicos());
+        beneficiario.setMoradia(new com.estrela.cbms.model.Moradia());
+        beneficiario.getMoradia().setEndereco(new com.estrela.cbms.model.Endereco());
+        beneficiario.getMoradia().setServicos(new com.estrela.cbms.model.Servicos());
 
-        responsavel.setEducacaoBens(new com.estrela.cbms.model.EducacaoBens());
-        responsavel.getEducacaoBens().setBens(new com.estrela.cbms.model.Bens());
+        beneficiario.setEducacaoBens(new com.estrela.cbms.model.EducacaoBens());
+        beneficiario.getEducacaoBens().setBens(new com.estrela.cbms.model.Bens());
 
-        return responsavel;
+        return beneficiario;
     }
 
     @Test
     @DisplayName("Deve carregar a página inicial com sucesso")
     void indexPage() throws Exception {
-        when(responsavelService.buscar(anyString())).thenReturn(Collections.emptyList());
+        when(beneficiarioService.buscar(anyString())).thenReturn(Collections.emptyList());
 
         mockMvc.perform(get("/"))
                 .andExpect(status().isOk())
                 .andExpect(view().name("index"))
-                .andExpect(model().attributeExists("responsaveis"));
+                .andExpect(model().attributeExists("beneficiarios"));
     }
 
     @Test
-    @DisplayName("Deve carregar o formulário de cadastro com um novo objeto Responsavel")
+    @DisplayName("Deve carregar o formulário de cadastro com um novo objeto Beneficiario")
     void formPage() throws Exception {
         mockMvc.perform(get("/novo"))
                 .andExpect(status().isOk())
-                .andExpect(view().name("form"))
-                .andExpect(model().attributeExists("responsavel"));
+                .andExpect(view().name("cadastro_beneficiario"))
+                .andExpect(model().attributeExists("beneficiario"));
     }
 
     @Test
-    @DisplayName("Deve carregar a página de perfil de um responsável")
+    @DisplayName("Deve carregar a página de perfil de um beneficiário")
     void perfilPage() throws Exception {
-        Responsavel responsavel = criarResponsavelMock();
+        Beneficiario beneficiario = criarBeneficiarioMock();
 
-        when(responsavelService.buscarPorId(1L)).thenReturn(responsavel);
+        when(beneficiarioService.buscarPorId(1L)).thenReturn(beneficiario);
 
         mockMvc.perform(get("/perfil/1"))
                 .andExpect(status().isOk())
-                .andExpect(view().name("perfil"))
-                .andExpect(model().attribute("responsavel", responsavel));
+                .andExpect(view().name("perfil_beneficiario"))
+                .andExpect(model().attribute("beneficiario", beneficiario));
     }
 
 }

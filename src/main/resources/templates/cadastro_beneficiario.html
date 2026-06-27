@@ -1,14 +1,14 @@
 <!DOCTYPE html>
 <html xmlns:th="http://www.thymeleaf.org">
-<head th:replace="~{fragmentos_comuns :: head('Cadastro de Responsável')}"></head>
+<head th:replace="~{fragmentos_comuns :: head('Cadastro de Beneficiário')}"></head>
 <body>
 <div class="container-main">
-    <h2 th:text="${responsavel.id == null ? 'Novo Responsável' : 'Editar Responsável'}">Novo Responsável</h2>
+    <h2 th:text="${beneficiario.id == null ? 'Novo Beneficiário' : 'Editar Beneficiário'}">Novo Beneficiário</h2>
     <hr>
     
     <div th:replace="~{fragmentos_comuns :: alerts}"></div>
 
-    <form th:action="@{/salvar}" th:object="${responsavel}" method="post" id="responsavelForm">
+    <form th:action="@{/salvar}" th:object="${beneficiario}" method="post" id="beneficiarioForm">
         <input type="hidden" th:field="*{id}">
         
         <!-- Tabs Nav -->
@@ -50,8 +50,8 @@
                         <label class="form-label d-block">Foto de Perfil</label>
                         <div class="webcam-container">
                             <video id="webcam-preview" autoplay playsinline></video>
-                            <img id="photo-preview" th:src="${responsavel.foto != null ? responsavel.foto : ''}" th:style="${responsavel.foto != null ? 'display:block' : 'display:none'}">
-                            <div id="placeholder" class="photo-placeholder" th:style="${responsavel.foto == null ? 'display:flex' : 'display:none'}">
+                            <img id="photo-preview" th:src="${beneficiario.foto != null ? beneficiario.foto : ''}" th:style="${beneficiario.foto != null ? 'display:block' : 'display:none'}">
+                            <div id="placeholder" class="photo-placeholder" th:style="${beneficiario.foto == null ? 'display:flex' : 'display:none'}">
                                 <i class="bi bi-camera fs-1"></i>
                                 <span>Sem foto</span>
                             </div>
@@ -102,10 +102,10 @@
                                 </div>
                             </div>
                         </div>
-                        <div class="row" th:if="${responsavel.id != null}">
+                        <div class="row" th:if="${beneficiario.id != null}">
                             <div class="col-md-12 mb-3">
                                 <label class="form-label">Código de Barras</label>
-                                <input type="text" th:field="*{codigoBarras}" class="form-control" placeholder="Código de Barras do responsável">
+                                <input type="text" th:field="*{codigoBarras}" class="form-control" placeholder="Código de Barras do beneficiário">
                             </div>
                         </div>
                     </div>
@@ -251,8 +251,8 @@
             <div class="tab-pane fade" id="educacao" role="tabpanel">
                 <div class="row">
                     <div class="col-md-8 mb-3">
-                        <label class="form-label">Escolaridade do Responsável</label>
-                        <select th:field="*{educacaoBens.escolaridadeResponsavel}" class="form-select">
+                        <label class="form-label">Escolaridade do Beneficiário</label>
+                        <select th:field="*{educacaoBens.escolaridadeBeneficiario}" class="form-select">
                             <option value="">Selecione...</option>
                             <option value="Analfabeto">Analfabeto</option>
                             <option value="Fundamental Incompleto">Fundamental Incompleto</option>
@@ -590,7 +590,7 @@
     document.addEventListener('DOMContentLoaded', () => {
         atualizarStatusAbas();
         
-        const formEl = document.getElementById('responsavelForm');
+        const formEl = document.getElementById('beneficiarioForm');
         if (formEl) {
             formEl.addEventListener('input', atualizarStatusAbas);
             formEl.addEventListener('change', atualizarStatusAbas);

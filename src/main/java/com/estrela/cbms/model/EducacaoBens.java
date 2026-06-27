@@ -15,8 +15,8 @@ import lombok.AllArgsConstructor;
 @AllArgsConstructor
 @Embeddable
 public class EducacaoBens {
-    @JsonProperty("escolaridade_responsavel")
-    private String escolaridadeResponsavel;
+    @JsonProperty("escolaridade_beneficiario")
+    private String escolaridadeBeneficiario;
 
     @Min(value = 0, message = "A quantidade de estudantes não pode ser negativa")
     @JsonProperty("qtd_estudantes")

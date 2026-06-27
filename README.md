@@ -1,6 +1,6 @@
 # CBMS - Cadastro Beneficiário de Movimento Social
 
-O CBMS é um sistema desenvolvido em Java com Spring Boot para gestão de beneficiários e controle de coletas/entregas de cestas básicas. O sistema foca na coleta detalhada de dados socioeconômicos para fornecer um perfil completo do responsável e seu núcleo familiar.
+O CBMS é um sistema desenvolvido em Java com Spring Boot para gestão de beneficiários e controle de coletas/entregas de cestas básicas. O sistema foca na coleta detalhada de dados socioeconômicos para fornecer um perfil completo do beneficiário e seu núcleo familiar.
 
 ## 🛠 Tecnologias Utilizadas
 
@@ -13,11 +13,11 @@ O CBMS é um sistema desenvolvido em Java com Spring Boot para gestão de benefi
 
 ## 🏗 Arquitetura e Modelagem
 
-O sistema utiliza o padrão MVC (Model-View-Controller) e organiza os dados do Responsável através de objetos embutidos (`@Embedded`), garantindo que todas as informações socioeconômicas residam na mesma tabela principal, facilitando consultas e relatórios.
+O sistema utiliza o padrão MVC (Model-View-Controller) e organiza os dados do Beneficiário através de objetos embutidos (`@Embedded`), garantindo que todas as informações socioeconômicas residam na mesma tabela principal, facilitando consultas e relatórios.
 
-### Estrutura do Modelo `Responsavel`
+### Estrutura do Modelo `Beneficiario`
 
-A entidade principal `Responsavel` agrega as seguintes sub-estruturas:
+A entidade principal `Beneficiario` agrega as seguintes sub-estruturas:
 
 1.  **Dados Pessoais:** Nome, CPF, Celular, Data de Nascimento (formato String para flexibilidade).
 2.  **Identificação Familiar (`@ElementCollection`):** Lista dinâmica de membros residentes com parentesco e ocupação.
@@ -28,7 +28,7 @@ A entidade principal `Responsavel` agrega as seguintes sub-estruturas:
     *   `endereco`: Dados de localização (CEP, Rua, Bairro, etc).
     *   `caracteristicas`: Tipo de moradia, nº de cômodos e material.
     *   `servicos`: Acesso a água, esgoto, lixo e eletricidade.
-5.  **Educação e Bens:** Escolaridade do responsável, quantidade de estudantes e lista de bens duráveis (Geladeira, Carro, PC, etc).
+5.  **Educação e Bens:** Escolaridade do beneficiário, quantidade de estudantes e lista de bens duráveis (Geladeira, Carro, PC, etc).
 6.  **Histórico de Coletas (`@OneToMany`):** Registro de todas as cestas retiradas pelo beneficiário.
 
 ## 🔌 Integrações e Funcionalidades Técnicas
@@ -41,7 +41,7 @@ Implementada no frontend através de JavaScript (`fetch`). Ao preencher o campo 
 - Fornece feedback visual via Spinner e tratamento de erros (CEP não encontrado).
 
 ### 2. Mapeamento de Atributos (JPA Overrides)
-Para evitar colisões de nomes em colunas do banco de dados (ex: o campo `tipo` presente tanto em Moradia quanto em Renda), o sistema utiliza `@AttributeOverrides` na entidade `Responsavel`:
+Para evitar colisões de nomes em colunas do banco de dados (ex: o campo `tipo` presente tanto em Moradia quanto em Renda), o sistema utiliza `@AttributeOverrides` na entidade `Beneficiario`:
 ```java
 @Embedded
 @AttributeOverrides({
