@@ -1,9 +1,9 @@
 function imprimirCodigoBarrasExterno(nomeBeneficiario, codigoBarras, barcodeSvgHtml) {
     var win = window.open('', '_blank');
     win.document.write('<!DOCTYPE html><html><head><title>Etiqueta</title><style>');
-    win.document.write('@page { size: 9cm 6cm; margin: 2mm; }');
+    win.document.write('@page { size: 70mm 100mm; margin: 2mm; }');
     win.document.write('* { box-sizing: border-box; margin: 0; padding: 0; }');
-    win.document.write('body { width: 100%; height: 100%; display: flex; justify-content: center; align-items: center; font-family: sans-serif; }');
+    win.document.write('html, body { width: 70mm; height: 100mm; display: flex; flex-direction: column; justify-content: center; align-items: center; font-family: sans-serif; overflow: hidden; }');
     win.document.write('.label { text-align: center; width: 100%; }');
     win.document.write('.projeto { font-size: 8pt; font-weight: bold; color: #555; }');
     win.document.write('.nome { font-size: 11pt; font-weight: bold; margin: 2mm 0; color: #000; word-break: break-word; }');
