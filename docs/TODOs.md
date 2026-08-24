@@ -18,7 +18,7 @@
 2. [ ] Corrigir bug de session ao realizar cadastro
 3. [ ] Adicionar campo para visitas domiciliares
 4. [ ] Adicionar sistema de controle de operadores
-5. [ ] Banco de dados remoto
+5. [x] Banco de dados remoto
 6. [ ] Adicionar controle de estoque
    - Banco de dados noSQL
    - Relacionar quais itens do estoque foram associados a um beneficiario
