@@ -40,7 +40,7 @@ public class Beneficiario {
     private String codigoBarras;
 
     @Lob
-    @Column(columnDefinition = "LONGTEXT")
+    @Column(columnDefinition = "TEXT")
     private String foto;
 
     @ElementCollection
