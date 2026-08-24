@@ -17,7 +17,7 @@
 1. [ ] Campo de ativo/inativo para beneficiario
 2. [ ] Corrigir bug de session ao realizar cadastro
 3. [ ] Adicionar campo para visitas domiciliares
-4. [ ] Adicionar sistestema de controle de operadores
+4. [ ] Adicionar sistema de controle de operadores
 5. [ ] Banco de dados remoto
 6. [ ] Adicionar controle de estoque
    - Banco de dados noSQL
