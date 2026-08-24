@@ -59,8 +59,8 @@ private Moradia moradia;
 
 1. Certifique-se de ter o Java 21 instalado.
 2. Execute o comando: `./mvnw spring-boot:run`
-3. Acesse no navegador: `http://localhost:8080`
-4. Console do Banco de Dados H2: `http://localhost:8080/h2-console`
+3. Acesse no navegador: `http://localhost:10000`
+4. Console do Banco de Dados H2: `http://localhost:10000/h2-console`
    - **JDBC URL:** `jdbc:h2:mem:testdb`
    - **User:** `sa`
    - **Password:** `password`
