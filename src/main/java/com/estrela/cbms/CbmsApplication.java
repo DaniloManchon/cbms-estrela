@@ -59,5 +59,5 @@ public class CbmsApplication {
 //		} catch (IOException | URISyntaxException e) {
 //			log.error("Error opening browser: {}", e.getMessage());
 //		}
-	}
+//	}
 }
