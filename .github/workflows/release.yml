@@ -24,34 +24,51 @@ jobs:
           distribution: 'temurin'
           cache: 'maven'
 
-      # 1. Analisa a mensagem do commit e incrementa dinamicamente
+      # 1. Busca a última tag Git e incrementa dinamicamente
       - name: Bump Version Dynamically
         run: |
-          # Pega a mensagem do último commit
+          # 1. Captura a última tag Git do repositório (ex: v1.2.3)
+          # Se não houver nenhuma tag, define o padrão inicial como v0.0.0
+          LAST_TAG=$(git describe --tags --abbrev=0 2>/dev/null || echo "v0.0.0")
+          echo "Última tag encontrada: $LAST_TAG"
+          
+          # Remove o prefixo 'v' se existir (de v1.2.3 para 1.2.3)
+          CLEAN_VERSION="${LAST_TAG#v}"
+          
+          # Divide a versão em Major, Minor e Patch usando o ponto (.) como separador
+          IFS='.' read -r MAJOR MINOR PATCH <<< "$CLEAN_VERSION"
+          
+          # Garante que as variáveis sejam numéricas (caso falte algum campo)
+          MAJOR=${MAJOR:-0}
+          MINOR=${MINOR:-0}
+          PATCH=${PATCH:-0}
+
+          # 2. Pega a mensagem do último commit para decidir o tipo de bump
           COMMIT_MSG=$(git log -1 --pretty=%B)
           echo "Mensagem do commit: $COMMIT_MSG"
           
-          # Define a regra de incremento com base na mensagem (Padrão: Patch)
-          BUMP_TYPE="nextIncrementalVersion"
-          
+          # 3. Aplica as regras de incremento semântico baseadas no commit
           if [[ "$COMMIT_MSG" == *"[major]"* ]] || [[ "$COMMIT_MSG" == *"#major"* ]] || [[ "$COMMIT_MSG" == *"BREAKING CHANGE"* ]]; then
             echo "Detectado incremento de MAJOR"
-            BUMP_TYPE="nextMajorVersion"
-            VERSION_PATTERN="\${parsedVersion.nextMajorVersion}.0.0"
+            NEW_MAJOR=$((MAJOR + 1))
+            NEW_VERSION="$NEW_MAJOR.0.0"
           elif [[ "$COMMIT_MSG" == *"[minor]"* ]] || [[ "$COMMIT_MSG" == *"#minor"* ]] || [[ "$COMMIT_MSG" == *"feat:"* ]] || [[ "$COMMIT_MSG" == *"feat("* ]]; then
             echo "Detectado incremento de MINOR"
-            VERSION_PATTERN="\${parsedVersion.majorVersion}.\${parsedVersion.nextMinorVersion}.0"
+            NEW_MINOR=$((MINOR + 1))
+            NEW_VERSION="$MAJOR.$NEW_MINOR.0"
           else
             echo "Padrão ou detectado incremento de PATCH"
-            VERSION_PATTERN="\${parsedVersion.majorVersion}.\${parsedVersion.minorVersion}.\${parsedVersion.nextIncrementalVersion}"
+            NEW_PATCH=$((PATCH + 1))
+            NEW_VERSION="$MAJOR.$MINOR.$NEW_PATCH"
           fi
           
-          # Executa o Maven com o padrão escolhido
-          mvn build-helper:parse-version versions:set -DnewVersion=$VERSION_PATTERN -DgenerateBackupPoms=false
+          echo "Nova versão calculada: $NEW_VERSION"
           
-          # Salva a nova versão gerada na variável de ambiente
-          CURRENT_VERSION=$(mvn help:evaluate -Dexpression=project.version -q -DforceStdout)
-          echo "NEW_VERSION=${CURRENT_VERSION}" >> $GITHUB_ENV
+          # 4. Atualiza o arquivo pom.xml com a versão exata que calculamos via Bash
+          mvn versions:set -DnewVersion=$NEW_VERSION -DgenerateBackupPoms=false
+          
+          # Salva a nova versão na variável global do pipeline para as próximas etapas
+          echo "NEW_VERSION=$NEW_VERSION" >> $GITHUB_ENV
 
       # 2. Builda o pacote JAR usando a nova versão estabelecida
       - name: Build with Maven
