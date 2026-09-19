@@ -27,14 +27,13 @@ class ViewControllerTest {
 
     private Beneficiario criarBeneficiarioMock() {
         Beneficiario beneficiario = new Beneficiario();
-        beneficiario.setId(1L);
+        beneficiario.setId("1");
         beneficiario.setNomeCompleto("João da Silva");
         beneficiario.setCpf("191.000.000-00");
         beneficiario.setCelular("(11) 98888-8888");
         beneficiario.setColetas(Collections.emptyList());
         beneficiario.setIdentificacaoFamiliar(Collections.emptyList());
 
-        // Inicializa objetos aninhados para evitar NullPointerException no Thymeleaf
         beneficiario.setRenda(new com.estrela.cbms.model.Renda());
         beneficiario.getRenda().setFontesRenda(new com.estrela.cbms.model.FontesRenda());
 
@@ -73,7 +72,7 @@ class ViewControllerTest {
     void perfilPage() throws Exception {
         Beneficiario beneficiario = criarBeneficiarioMock();
 
-        when(beneficiarioService.buscarPorId(1L)).thenReturn(beneficiario);
+        when(beneficiarioService.buscarPorId("1")).thenReturn(beneficiario);
 
         mockMvc.perform(get("/perfil/1"))
                 .andExpect(status().isOk())

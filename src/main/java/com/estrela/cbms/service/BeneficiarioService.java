@@ -1,12 +1,12 @@
 package com.estrela.cbms.service;
 
 import com.estrela.cbms.model.*;
-import com.estrela.cbms.repository.ColetaRepository;
 import com.estrela.cbms.repository.BeneficiarioRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
@@ -16,48 +16,31 @@ public class BeneficiarioService {
     @Autowired
     private BeneficiarioRepository beneficiarioRepository;
 
-    @Autowired
-    private ColetaRepository coletaRepository;
-
     public Beneficiario salvar(Beneficiario beneficiario) {
-        if (beneficiario.getId() != null) {
-            Beneficiario atual = beneficiarioRepository.findById(beneficiario.getId())
-                    .orElseThrow(() -> new RuntimeException("Beneficiário não encontrado para atualização."));
-            // Preserva a lista de coletas que não vem do formulário
-            beneficiario.setColetas(atual.getColetas());
-        }
 
         Optional<Beneficiario> existente = beneficiarioRepository.findByCpf(beneficiario.getCpf());
         
         if (existente.isPresent()) {
-            // Se for um novo cadastro OU se o CPF pertence a OUTRO ID, bloqueia
-            if (beneficiario.getId() == null || !existente.get().getId().equals(beneficiario.getId())) {
-                throw new RuntimeException("Já existe um beneficiário cadastrado com este CPF.");
-            }
+            throw new RuntimeException("Já existe um beneficiário cadastrado com este CPF.");
         }
 
-        // Gerar código de barras automaticamente se não existir
-        if (beneficiario.getCodigoBarras() == null || beneficiario.getCodigoBarras().trim().isEmpty()) {
-            beneficiario.setCodigoBarras("EST" + System.currentTimeMillis());
-        } else {
-            // Se informado manualmente, validar unicidade
-            Optional<Beneficiario> existenteCodigo = beneficiarioRepository.findByCodigoBarras(beneficiario.getCodigoBarras().trim());
-            if (existenteCodigo.isPresent()) {
-                if (beneficiario.getId() == null || !existenteCodigo.get().getId().equals(beneficiario.getId())) {
-                    throw new RuntimeException("Já existe um beneficiário cadastrado com este Código de Barras.");
-                }
-            }
-        }
+        beneficiario.setId(null);
+        beneficiario.setCodigoBarras("EST" + System.currentTimeMillis());
 
         return beneficiarioRepository.save(beneficiario);
     }
 
-    public Coleta registrarColeta(String cpf) {
+    public Beneficiario registrarColeta(String cpf) {
         Beneficiario beneficiario = beneficiarioRepository.findByCpf(cpf)
                 .orElseThrow(() -> new RuntimeException("Beneficiário não encontrado para o CPF informado."));
         
-        Coleta novaColeta = new Coleta(LocalDateTime.now(), beneficiario);
-        return coletaRepository.save(novaColeta);
+        if (beneficiario.getColetas() == null) {
+            beneficiario.setColetas(new ArrayList<>());
+        }
+        
+        Coleta novaColeta = new Coleta(LocalDateTime.now());
+        beneficiario.getColetas().add(novaColeta);
+        return beneficiarioRepository.save(beneficiario);
     }
 
     public List<Beneficiario> listarTodos() {
@@ -78,13 +61,12 @@ public class BeneficiarioService {
         return beneficiarioRepository.findByNomeCompletoContainingIgnoreCaseOrCpfContainingOrCodigoBarrasContaining(termo, termo, termo);
     }
 
-    public Beneficiario buscarPorId(Long id) {
+    public Beneficiario buscarPorId(String id) {
         Beneficiario beneficiario = beneficiarioRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("Beneficiário não encontrado."));
         
         inicializarObjetosAninhados(beneficiario);
         
-        // Garante a ordenação das coletas da mais recente para a mais antiga
         if (beneficiario.getColetas() != null) {
             beneficiario.getColetas().sort((c1, c2) -> c2.getDataColeta().compareTo(c1.getDataColeta()));
         }
@@ -115,6 +97,10 @@ public class BeneficiarioService {
         }
         if (beneficiario.getEducacaoBens().getBens() == null) {
             beneficiario.getEducacaoBens().setBens(new Bens());
+        }
+        
+        if (beneficiario.getColetas() == null) {
+            beneficiario.setColetas(new ArrayList<>());
         }
     }
 }
