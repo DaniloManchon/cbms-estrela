@@ -2,7 +2,6 @@ package com.estrela.cbms.service;
 
 import com.estrela.cbms.model.Coleta;
 import com.estrela.cbms.model.Beneficiario;
-import com.estrela.cbms.repository.ColetaRepository;
 import com.estrela.cbms.repository.BeneficiarioRepository;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
@@ -12,11 +11,13 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
@@ -24,9 +25,6 @@ class BeneficiarioServiceTest {
 
     @Mock
     private BeneficiarioRepository beneficiarioRepository;
-
-    @Mock
-    private ColetaRepository coletaRepository;
 
     @InjectMocks
     private BeneficiarioService beneficiarioService;
@@ -36,7 +34,7 @@ class BeneficiarioServiceTest {
     @BeforeEach
     void setUp() {
         beneficiario = new Beneficiario();
-        beneficiario.setId(1L);
+        beneficiario.setId("1");
         beneficiario.setNomeCompleto("João da Silva");
         beneficiario.setCpf("123.456.789-00");
     }
@@ -60,7 +58,7 @@ class BeneficiarioServiceTest {
     void salvarComCpfDuplicado() {
         beneficiario.setId(null);
         Beneficiario outroBeneficiario = new Beneficiario();
-        outroBeneficiario.setId(2L);
+        outroBeneficiario.setId("2");
         outroBeneficiario.setCpf("123.456.789-00");
 
         when(beneficiarioRepository.findByCpf(anyString())).thenReturn(Optional.of(outroBeneficiario));
@@ -76,18 +74,19 @@ class BeneficiarioServiceTest {
     @Test
     @DisplayName("Deve permitir atualizar o mesmo beneficiário mantendo o CPF e preservando coletas")
     void atualizarMesmoBeneficiarioPreservandoColetas() {
-        List<Coleta> coletasExistentes = List.of(new Coleta());
+        List<Coleta> coletasExistentes = new ArrayList<>();
+        coletasExistentes.add(new Coleta());
         beneficiario.setColetas(coletasExistentes);
 
-        when(beneficiarioRepository.findById(1L)).thenReturn(Optional.of(beneficiario));
+        when(beneficiarioRepository.findById("1")).thenReturn(Optional.of(beneficiario));
         when(beneficiarioRepository.findByCpf(anyString())).thenReturn(Optional.of(beneficiario));
         when(beneficiarioRepository.save(any(Beneficiario.class))).thenAnswer(invocation -> invocation.getArgument(0));
 
         Beneficiario paraAtualizar = new Beneficiario();
-        paraAtualizar.setId(1L);
+        paraAtualizar.setId("1");
         paraAtualizar.setNomeCompleto("João da Silva Atualizado");
         paraAtualizar.setCpf("123.456.789-00");
-        paraAtualizar.setColetas(null); // Simulando o que vem do formulário
+        paraAtualizar.setColetas(null); 
 
         Beneficiario salvo = beneficiarioService.salvar(paraAtualizar);
 
@@ -101,14 +100,13 @@ class BeneficiarioServiceTest {
     @DisplayName("Deve registrar uma nova coleta para um beneficiário existente")
     void registrarColetaComSucesso() {
         when(beneficiarioRepository.findByCpf(anyString())).thenReturn(Optional.of(beneficiario));
-        when(coletaRepository.save(any(Coleta.class))).thenAnswer(invocation -> invocation.getArgument(0));
+        when(beneficiarioRepository.save(any(Beneficiario.class))).thenAnswer(invocation -> invocation.getArgument(0));
 
-        Coleta coleta = beneficiarioService.registrarColeta("123.456.789-00");
+        beneficiarioService.registrarColeta("123.456.789-00");
 
-        assertNotNull(coleta);
-        assertEquals(beneficiario, coleta.getBeneficiario());
-        assertNotNull(coleta.getDataColeta());
-        verify(coletaRepository, times(1)).save(any(Coleta.class));
+        assertNotNull(beneficiario.getColetas());
+        assertEquals(1, beneficiario.getColetas().size());
+        verify(beneficiarioRepository, times(1)).save(beneficiario);
     }
 
     @Test
@@ -120,7 +118,7 @@ class BeneficiarioServiceTest {
             beneficiarioService.registrarColeta("000.000.000-00");
         });
 
-        verify(coletaRepository, never()).save(any());
+        verify(beneficiarioRepository, never()).save(any());
     }
 
     @Test
@@ -150,14 +148,14 @@ class BeneficiarioServiceTest {
     @Test
     @DisplayName("Deve buscar por ID e inicializar objetos aninhados")
     void buscarPorIdEInicializar() {
-        when(beneficiarioRepository.findById(1L)).thenReturn(Optional.of(beneficiario));
+        when(beneficiarioRepository.findById("1")).thenReturn(Optional.of(beneficiario));
 
-        Beneficiario encontrado = beneficiarioService.buscarPorId(1L);
+        Beneficiario encontrado = beneficiarioService.buscarPorId("1");
 
         assertNotNull(encontrado);
         assertNotNull(encontrado.getRenda());
         assertNotNull(encontrado.getMoradia());
         assertNotNull(encontrado.getEducacaoBens());
-        verify(beneficiarioRepository, times(1)).findById(1L);
+        verify(beneficiarioRepository, times(1)).findById("1");
     }
 }

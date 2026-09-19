@@ -1,8 +1,6 @@
 package com.estrela.cbms.model;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
-import jakarta.persistence.Embeddable;
-import jakarta.persistence.Embedded;
 import jakarta.validation.constraints.Min;
 import lombok.Getter;
 import lombok.Setter;
@@ -13,7 +11,6 @@ import lombok.AllArgsConstructor;
 @Setter
 @NoArgsConstructor
 @AllArgsConstructor
-@Embeddable
 public class EducacaoBens {
     @JsonProperty("escolaridade_beneficiario")
     private String escolaridadeBeneficiario;
@@ -22,6 +19,5 @@ public class EducacaoBens {
     @JsonProperty("qtd_estudantes")
     private Integer qtdEstudantes;
 
-    @Embedded
     private Bens bens;
 }

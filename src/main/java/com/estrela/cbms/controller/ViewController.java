@@ -28,7 +28,6 @@ public class ViewController {
     public String index(@RequestParam(required = false) String busca, Model model) {
         java.util.List<Beneficiario> lista;
         if (busca != null && !busca.isBlank()) {
-            // Tenta buscar por código de barras exato para redirecionamento imediato
             java.util.Optional<Beneficiario> porCodigo = beneficiarioService.buscarPorCodigoBarras(busca.trim());
             if (porCodigo.isPresent()) {
                 return "redirect:/perfil/" + porCodigo.get().getId();
@@ -52,7 +51,7 @@ public class ViewController {
     }
 
     @GetMapping("/editar/{id}")
-    public String editar(@PathVariable Long id, Model model) {
+    public String editar(@PathVariable String id, Model model) {
         try {
             Beneficiario beneficiario = beneficiarioService.buscarPorId(id);
             model.addAttribute("beneficiario", beneficiario);
@@ -63,7 +62,7 @@ public class ViewController {
     }
 
     @GetMapping("/perfil/{id}")
-    public String perfil(@PathVariable Long id, Model model) {
+    public String perfil(@PathVariable String id, Model model) {
         try {
             model.addAttribute("beneficiario", beneficiarioService.buscarPorId(id));
             return "perfil_beneficiario";
@@ -96,10 +95,10 @@ public class ViewController {
     @PostMapping("/coleta/{cpf}")
     public String registrarColeta(@PathVariable String cpf, @RequestParam(required = false) Boolean noPerfil, RedirectAttributes redirectAttributes) {
         try {
-            Coleta coleta = beneficiarioService.registrarColeta(cpf);
+            Beneficiario beneficiario = beneficiarioService.registrarColeta(cpf);
             redirectAttributes.addFlashAttribute("sucesso", "Coleta registrada com sucesso!");
-            if (Boolean.TRUE.equals(noPerfil) && coleta.getBeneficiario() != null) {
-                return "redirect:/perfil/" + coleta.getBeneficiario().getId();
+            if (Boolean.TRUE.equals(noPerfil)) {
+                return "redirect:/perfil/" + beneficiario.getId();
             }
         } catch (Exception e) {
             redirectAttributes.addFlashAttribute("erro", e.getMessage());

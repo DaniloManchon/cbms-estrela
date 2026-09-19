@@ -1,8 +1,6 @@
 package com.estrela.cbms.model;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
-import jakarta.persistence.Embeddable;
-import jakarta.persistence.Embedded;
 import jakarta.validation.constraints.Min;
 import lombok.Getter;
 import lombok.Setter;
@@ -13,9 +11,7 @@ import lombok.AllArgsConstructor;
 @Setter
 @NoArgsConstructor
 @AllArgsConstructor
-@Embeddable
 public class Moradia {
-    @Embedded
     private Endereco endereco;
 
     private String tipo;
@@ -26,6 +22,5 @@ public class Moradia {
 
     private String material;
 
-    @Embedded
     private Servicos servicos;
 }
