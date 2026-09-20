@@ -10,12 +10,13 @@ import org.springframework.data.mongodb.core.index.Indexed;
 import org.springframework.data.mongodb.core.mapping.Document;
 import java.util.List;
 
-@Data
-@EqualsAndHashCode(onlyUseValueOfStrategy = true)
+@Getter
+@Setter
+@EqualsAndHashCode(of = "id")
+@ToString
 @Document(collection = "beneficiarios")
 public class Beneficiario {
 
-    @EqualsAndHashCode.Include
     @JsonIgnore
     @Id
     private String id;
