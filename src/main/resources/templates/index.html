@@ -34,6 +34,7 @@
             <thead class="table-light">
             <tr>
                 <th>Nome</th>
+                <th>Status</th>
                 <th>CPF</th>
                 <th>Última Coleta</th>
                 <th>Total</th>
@@ -44,6 +45,12 @@
             <tr th:each="r : ${beneficiarios}">
                 <td class="align-middle">
                     <a th:href="@{'/perfil/' + ${r.id}}" th:text="${r.nomeCompleto}" class="text-decoration-none fw-bold"></a>
+                </td>
+                <td class="align-middle">
+                    <span th:if="${r.ativo != null}">
+                        <span th:if="${r.ativo}" class="badge bg-success"><i class="bi bi-check-circle"></i> Ativo</span>
+                        <span th:unless="${r.ativo}" class="badge bg-danger"><i class="bi bi-x-circle"></i> Inativo</span>
+                    </span>
                 </td>
                 <td class="align-middle" th:text="${r.cpf}"></td>
                 <td class="align-middle">

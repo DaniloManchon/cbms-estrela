@@ -53,6 +53,9 @@ public class Beneficiario {
 
     private List<Coleta> coletas;
 
+    @JsonProperty("ativo")
+    private Boolean ativo = true;
+
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;

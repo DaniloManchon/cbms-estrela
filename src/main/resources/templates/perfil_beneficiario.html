@@ -16,7 +16,13 @@
             </div>
             <div>
                 <h2 th:text="${beneficiario.nomeCompleto}" class="mb-0">Nome do Beneficiário</h2>
-                <p class="text-muted mb-2">CPF: <span th:text="${beneficiario.cpf}"></span> | Celular: <span th:text="${beneficiario.celular}"></span></p>
+                <p class="text-muted mb-2">
+                    CPF: <span th:text="${beneficiario.cpf}"></span> | Celular: <span th:text="${beneficiario.celular}"></span>
+                    <span th:if="${beneficiario.ativo != null}" class="ms-2">
+                        <span th:if="${beneficiario.ativo}" class="badge bg-success"><i class="bi bi-check-circle"></i> Ativo</span>
+                        <span th:unless="${beneficiario.ativo}" class="badge bg-danger"><i class="bi bi-x-circle"></i> Inativo</span>
+                    </span>
+                </p>
                 <div th:if="${beneficiario.codigoBarras}" class="d-flex align-items-center gap-3">
                     <div>
                         <svg id="barcode"></svg>
