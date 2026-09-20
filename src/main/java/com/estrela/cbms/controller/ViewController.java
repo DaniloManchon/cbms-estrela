@@ -10,12 +10,12 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.servlet.mvc.support.RedirectAttributes;
-
 import org.springframework.web.bind.annotation.RequestParam;
-
+import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 import jakarta.validation.Valid;
 import org.springframework.validation.BindingResult;
+import java.util.List;
+import java.util.Optional;
 
 @Log4j2
 @Controller
@@ -26,17 +26,17 @@ public class ViewController {
 
     @GetMapping("/")
     public String index(@RequestParam(required = false) String busca, Model model) {
-        java.util.List<Beneficiario> lista;
+        List<Beneficiario> lista;
         if (busca != null && !busca.isBlank()) {
-            java.util.Optional<Beneficiario> porCodigo = beneficiarioService.buscarPorCodigoBarras(busca.trim());
-            if (porCodigo.isPresent()) {
-                return "redirect:/perfil/" + porCodigo.get().getId();
+            Optional<Beneficiario> beneficiario = beneficiarioService.buscarPorCodigoBarras(busca.trim());
+            if (beneficiario.isPresent()) {
+                return "redirect:/perfil/" + beneficiario.get().getId();
             }
             lista = beneficiarioService.buscar(busca);
         } else {
             lista = beneficiarioService.listarTodos();
         }
-        log.debug("Listando responsáveis. Quantidade encontrada: " + (lista != null ? lista.size() : "null"));
+        log.debug("Listando responsáveis. Quantidade encontrada: {}", lista.size());
         model.addAttribute("beneficiarios", lista);
         model.addAttribute("termoBusca", busca);
         return "index";
@@ -53,9 +53,8 @@ public class ViewController {
     @GetMapping("/editar/{id}")
     public String editar(@PathVariable String id, Model model) {
         try {
-            Beneficiario beneficiario = beneficiarioService.buscarPorId(id);
-            model.addAttribute("beneficiario", beneficiario);
-        return "cadastro_beneficiario";
+            model.addAttribute("beneficiario", beneficiarioService.buscarPorId(id));
+            return "cadastro_beneficiario";
         } catch (Exception e) {
             return "redirect:/?erro=Beneficiario nao encontrado";
         }
@@ -79,13 +78,12 @@ public class ViewController {
             return "redirect:/novo";
         }
         try {
-            log.debug("Tentando salvar beneficiário: " + beneficiario.getNomeCompleto());
+            log.debug("Tentando salvar beneficiário: {}", beneficiario.getNomeCompleto());
             beneficiarioService.salvar(beneficiario);
             log.debug("Beneficiário salvo com sucesso!");
             redirectAttributes.addFlashAttribute("sucesso", "Beneficiário cadastrado com sucesso!");
         } catch (Exception e) {
-            log.debug("Erro ao salvar beneficiário: " + e.getMessage());
-            e.printStackTrace();
+            log.error("Erro ao salvar beneficiário: {}", e.getMessage(), e);
             redirectAttributes.addFlashAttribute("erro", e.getMessage());
             return "redirect:/novo";
         }
