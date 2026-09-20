@@ -23,7 +23,7 @@
                         <span th:unless="${beneficiario.ativo}" class="badge bg-danger"><i class="bi bi-x-circle"></i> Inativo</span>
                     </span>
                 </p>
-                <div th:if="${!beneficiario.ativo and beneficiario.motivoInativacao}" class="alert alert-warning alert-sm mb-3">
+                <div th:if="${!beneficiario.ativo && beneficiario.motivoInativacao != null}" class="alert alert-warning alert-sm mb-3">
                     <strong>Motivo da Inativação:</strong> <span th:text="${beneficiario.motivoInativacao}"></span>
                 </div>
                 <div th:if="${beneficiario.codigoBarras}" class="d-flex align-items-center gap-3">
