@@ -261,6 +261,25 @@ class BeneficiarioServiceTest {
         verify(beneficiarioRepository, never()).save(any());
     }
 
+    @Test
+    @DisplayName("Deve lançar exceção ao tentar registrar coleta para beneficiário inativo")
+    void registrarColetaBeneficiarioInativo() {
+        Beneficiario beneficiarioInativo = new Beneficiario();
+        beneficiarioInativo.setId("1");
+        beneficiarioInativo.setCpf("123.456.789-00");
+        beneficiarioInativo.setAtivo(false);
+        beneficiarioInativo.setMotivoInativacao("Mudou de cidade");
+
+        when(beneficiarioRepository.findByCpf(anyString())).thenReturn(Optional.of(beneficiarioInativo));
+
+        RuntimeException exception = assertThrows(RuntimeException.class, () -> {
+            beneficiarioService.registrarColeta("123.456.789-00");
+        });
+
+        assertEquals("Não é possível registrar coleta para beneficiário inativo.", exception.getMessage());
+        verify(beneficiarioRepository, never()).save(any());
+    }
+
     // ===== TESTES PARA LISTAGEM E BUSCA COM ORDENAÇÃO =====
 
     @Test

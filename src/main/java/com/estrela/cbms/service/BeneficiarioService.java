@@ -70,6 +70,11 @@ public class BeneficiarioService {
         Beneficiario beneficiario = beneficiarioRepository.findByCpf(cpf)
                 .orElseThrow(() -> new RuntimeException("Beneficiário não encontrado para o CPF informado."));
 
+        // Verifica se o beneficiário está ativo
+        if (Boolean.FALSE.equals(beneficiario.getAtivo())) {
+            throw new RuntimeException("Não é possível registrar coleta para beneficiário inativo.");
+        }
+
         // Inicializa a lista de coletas se for nula
         if (beneficiario.getColetas() == null) {
             beneficiario.setColetas(new ArrayList<>());
