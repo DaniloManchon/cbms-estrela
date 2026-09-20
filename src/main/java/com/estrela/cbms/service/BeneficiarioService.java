@@ -16,25 +16,49 @@ public class BeneficiarioService {
     @Autowired
     private BeneficiarioRepository beneficiarioRepository;
 
-    public Beneficiario salvar(Beneficiario beneficiario) {
-
+    public Beneficiario criarBeneficiario(Beneficiario beneficiario) {
         Optional<Beneficiario> existente = beneficiarioRepository.findByCpf(beneficiario.getCpf());
 
         if (existente.isPresent()) {
-            // Se é uma edição (beneficiário com ID) e o CPF já existe, verifica se é o mesmo beneficiário
-            if (beneficiario.getId() != null && existente.get().getId().equals(beneficiario.getId())) {
-                // É o mesmo beneficiário sendo editado, permitir atualização
-            } else {
+            throw new RuntimeException("Já existe um beneficiário cadastrado com este CPF.");
+        }
+
+        beneficiario.setId(null);
+        beneficiario.setCodigoBarras("EST" + System.currentTimeMillis());
+
+        return beneficiarioRepository.save(beneficiario);
+    }
+
+    public Beneficiario atualizarBeneficiario(Beneficiario beneficiario) {
+        if (beneficiario.getId() == null) {
+            throw new RuntimeException("ID do beneficiário é obrigatório para atualização.");
+        }
+
+        Beneficiario existente = beneficiarioRepository.findById(beneficiario.getId())
+                .orElseThrow(() -> new RuntimeException("Beneficiário não encontrado."));
+
+        // Verifica se o CPF foi alterado e se já existe outro beneficiário com esse CPF
+        if (!existente.getCpf().equals(beneficiario.getCpf())) {
+            Optional<Beneficiario> outroComMesmoCpf = beneficiarioRepository.findByCpf(beneficiario.getCpf());
+            if (outroComMesmoCpf.isPresent()) {
                 throw new RuntimeException("Já existe um beneficiário cadastrado com este CPF.");
             }
         }
 
-        // Se for novo, gera código de barras
-        if (beneficiario.getId() == null) {
-            beneficiario.setCodigoBarras("EST" + System.currentTimeMillis());
+        // Preserva as coletas existentes - nunca sobrescreve o histórico
+        if (existente.getColetas() != null && !existente.getColetas().isEmpty()) {
+            beneficiario.setColetas(existente.getColetas());
         }
 
         return beneficiarioRepository.save(beneficiario);
+    }
+
+    public Beneficiario salvar(Beneficiario beneficiario) {
+        if (beneficiario.getId() == null) {
+            return criarBeneficiario(beneficiario);
+        } else {
+            return atualizarBeneficiario(beneficiario);
+        }
     }
 
     public Beneficiario registrarColeta(String cpf) {
@@ -46,7 +70,16 @@ public class BeneficiarioService {
     }
 
     public List<Beneficiario> listarTodos() {
-        return beneficiarioRepository.findAll();
+        List<Beneficiario> beneficiarios = beneficiarioRepository.findAll();
+
+        // Ordena as coletas de cada beneficiário para que a mais recente fique primeiro
+        beneficiarios.forEach(b -> {
+            if (b.getColetas() != null) {
+                b.getColetas().sort((c1, c2) -> c2.getDataColeta().compareTo(c1.getDataColeta()));
+            }
+        });
+
+        return beneficiarios;
     }
 
     public Optional<Beneficiario> buscarPorCodigoBarras(String codigoBarras) {
@@ -60,7 +93,17 @@ public class BeneficiarioService {
         if (termo == null || termo.isBlank()) {
             return listarTodos();
         }
-        return beneficiarioRepository.findByNomeCompletoContainingIgnoreCaseOrCpfContainingOrCodigoBarrasContaining(termo, termo, termo);
+
+        List<Beneficiario> beneficiarios = beneficiarioRepository.findByNomeCompletoContainingIgnoreCaseOrCpfContainingOrCodigoBarrasContaining(termo, termo, termo);
+
+        // Ordena as coletas de cada beneficiário para que a mais recente fique primeiro
+        beneficiarios.forEach(b -> {
+            if (b.getColetas() != null) {
+                b.getColetas().sort((c1, c2) -> c2.getDataColeta().compareTo(c1.getDataColeta()));
+            }
+        });
+
+        return beneficiarios;
     }
 
     public Beneficiario buscarPorId(String id) {
