@@ -91,7 +91,6 @@ class BeneficiarioServiceTest {
         beneficiarioExistente.setColetas(coletasExistentes);
 
         when(beneficiarioRepository.findById("1")).thenReturn(Optional.of(beneficiarioExistente));
-        when(beneficiarioRepository.findByCpf("123.456.789-00")).thenReturn(Optional.of(beneficiarioExistente));
         when(beneficiarioRepository.save(any(Beneficiario.class))).thenAnswer(invocation -> invocation.getArgument(0));
 
         Beneficiario paraAtualizar = new Beneficiario();
@@ -172,7 +171,6 @@ class BeneficiarioServiceTest {
         beneficiario.setColetas(coletas);
 
         when(beneficiarioRepository.findById("1")).thenReturn(Optional.of(beneficiario));
-        when(beneficiarioRepository.findByCpf(anyString())).thenReturn(Optional.of(beneficiario));
         when(beneficiarioRepository.save(any(Beneficiario.class))).thenAnswer(invocation -> invocation.getArgument(0));
 
         Beneficiario salvo = beneficiarioService.salvar(beneficiario);
@@ -185,6 +183,7 @@ class BeneficiarioServiceTest {
     @Test
     @DisplayName("Deve registrar uma nova coleta para um beneficiário existente")
     void registrarColetaComSucesso() {
+        beneficiario.setColetas(new ArrayList<>());
         when(beneficiarioRepository.findByCpf(anyString())).thenReturn(Optional.of(beneficiario));
         when(beneficiarioRepository.save(any(Beneficiario.class))).thenAnswer(invocation -> invocation.getArgument(0));
 
