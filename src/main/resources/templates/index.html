@@ -63,7 +63,9 @@
                 <td class="text-center align-middle">
                     <div class="btn-group" role="group">
                         <form th:action="@{'/coleta/' + ${r.cpf}}" method="post" style="display:inline;">
-                            <button type="submit" class="btn btn-sm btn-success" title="Registrar Coleta">
+                            <button type="submit" class="btn btn-sm btn-success"
+                                    th:disabled="${!r.ativo}"
+                                    th:title="${r.ativo ? 'Registrar Coleta' : 'Beneficiário inativo'}">
                                 <i class="bi bi-cart-check"></i>
                             </button>
                         </form>

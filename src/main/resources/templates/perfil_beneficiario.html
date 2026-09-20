@@ -40,7 +40,9 @@
         <div class="text-end" style="min-width: 180px;">
             <form th:action="@{'/coleta/' + ${beneficiario.cpf}}" method="post" class="d-block mb-2">
                 <input type="hidden" name="noPerfil" value="true">
-                <button type="submit" class="btn btn-success w-100">
+                <button type="submit" class="btn btn-success w-100"
+                        th:disabled="${!beneficiario.ativo}"
+                        th:title="${beneficiario.ativo ? 'Registrar Coleta' : 'Beneficiário inativo'}">
                     <i class="bi bi-cart-check"></i> Registrar Coleta
                 </button>
             </form>
