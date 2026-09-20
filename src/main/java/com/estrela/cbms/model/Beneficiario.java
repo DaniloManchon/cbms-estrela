@@ -10,10 +10,8 @@ import org.springframework.data.mongodb.core.index.Indexed;
 import org.springframework.data.mongodb.core.mapping.Document;
 import java.util.List;
 
-@Getter
-@Setter
+@Data
 @EqualsAndHashCode(of = "id")
-@ToString
 @Document(collection = "beneficiarios")
 public class Beneficiario {
 
