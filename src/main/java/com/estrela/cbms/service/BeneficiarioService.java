@@ -72,9 +72,15 @@ public class BeneficiarioService {
     public List<Beneficiario> listarTodos() {
         List<Beneficiario> beneficiarios = beneficiarioRepository.findAll();
 
-        // Ordena as coletas de cada beneficiário para que a mais recente fique primeiro
+        // forEach: para CADA beneficiário (b) na lista, execute o código dentro das chaves
+        // b -> { ... } significa: "receba um beneficiário chamado 'b' e faça isto:"
         beneficiarios.forEach(b -> {
             if (b.getColetas() != null) {
+                // sort: ordena a lista de coletas usando um comparador (lambda)
+                // (c1, c2) -> c2.getDataColeta().compareTo(c1.getDataColeta())
+                // c1 e c2 são duas coletas sendo comparadas
+                // c2.compareTo(c1) = ordem DECRESCENTE (mais recente primeiro)
+                // se fosse c1.compareTo(c2) seria crescente (mais antiga primeiro)
                 b.getColetas().sort((c1, c2) -> c2.getDataColeta().compareTo(c1.getDataColeta()));
             }
         });
