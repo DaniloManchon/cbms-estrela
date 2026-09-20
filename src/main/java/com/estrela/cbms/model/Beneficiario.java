@@ -9,12 +9,13 @@ import org.springframework.data.annotation.Id;
 import org.springframework.data.mongodb.core.index.Indexed;
 import org.springframework.data.mongodb.core.mapping.Document;
 import java.util.List;
-import java.util.Objects;
 
 @Data
+@EqualsAndHashCode(onlyUseValueOfStrategy = true)
 @Document(collection = "beneficiarios")
 public class Beneficiario {
 
+    @EqualsAndHashCode.Include
     @JsonIgnore
     @Id
     private String id;
@@ -58,17 +59,4 @@ public class Beneficiario {
 
     @JsonProperty("motivo_inativacao")
     private String motivoInativacao;
-
-    @Override
-    public boolean equals(Object o) {
-        if (this == o) return true;
-        if (o == null || getClass() != o.getClass()) return false;
-        Beneficiario that = (Beneficiario) o;
-        return Objects.equals(id, that.id);
-    }
-
-    @Override
-    public int hashCode() {
-        return Objects.hashCode(id);
-    }
 }
