@@ -19,13 +19,20 @@ public class BeneficiarioService {
     public Beneficiario salvar(Beneficiario beneficiario) {
 
         Optional<Beneficiario> existente = beneficiarioRepository.findByCpf(beneficiario.getCpf());
-        
+
         if (existente.isPresent()) {
-            throw new RuntimeException("Já existe um beneficiário cadastrado com este CPF.");
+            // Se é uma edição (beneficiário com ID) e o CPF já existe, verifica se é o mesmo beneficiário
+            if (beneficiario.getId() != null && existente.get().getId().equals(beneficiario.getId())) {
+                // É o mesmo beneficiário sendo editado, permitir atualização
+            } else {
+                throw new RuntimeException("Já existe um beneficiário cadastrado com este CPF.");
+            }
         }
 
-        beneficiario.setId(null);
-        beneficiario.setCodigoBarras("EST" + System.currentTimeMillis());
+        // Se for novo, gera código de barras
+        if (beneficiario.getId() == null) {
+            beneficiario.setCodigoBarras("EST" + System.currentTimeMillis());
+        }
 
         return beneficiarioRepository.save(beneficiario);
     }
@@ -33,13 +40,8 @@ public class BeneficiarioService {
     public Beneficiario registrarColeta(String cpf) {
         Beneficiario beneficiario = beneficiarioRepository.findByCpf(cpf)
                 .orElseThrow(() -> new RuntimeException("Beneficiário não encontrado para o CPF informado."));
-        
-        if (beneficiario.getColetas() == null) {
-            beneficiario.setColetas(new ArrayList<>());
-        }
-        
-        Coleta novaColeta = new Coleta(LocalDateTime.now());
-        beneficiario.getColetas().add(novaColeta);
+
+        beneficiario.getColetas().add(new Coleta(LocalDateTime.now()));
         return beneficiarioRepository.save(beneficiario);
     }
 
@@ -81,24 +83,29 @@ public class BeneficiarioService {
         if (beneficiario.getRenda().getFontesRenda() == null) {
             beneficiario.getRenda().setFontesRenda(new FontesRenda());
         }
-        
+
         if (beneficiario.getMoradia() == null) {
-            beneficiario.setMoradia(new Moradia());
+            Moradia moradia = new Moradia();
+            moradia.setEndereco(new Endereco());
+            moradia.setServicos(new Servicos());
+            beneficiario.setMoradia(moradia);
+        } else {
+            if (beneficiario.getMoradia().getEndereco() == null) {
+                beneficiario.getMoradia().setEndereco(new Endereco());
+            }
+            if (beneficiario.getMoradia().getServicos() == null) {
+                beneficiario.getMoradia().setServicos(new Servicos());
+            }
         }
-        if (beneficiario.getMoradia().getEndereco() == null) {
-            beneficiario.getMoradia().setEndereco(new Endereco());
-        }
-        if (beneficiario.getMoradia().getServicos() == null) {
-            beneficiario.getMoradia().setServicos(new Servicos());
-        }
-        
+
         if (beneficiario.getEducacaoBens() == null) {
-            beneficiario.setEducacaoBens(new EducacaoBens());
-        }
-        if (beneficiario.getEducacaoBens().getBens() == null) {
+            EducacaoBens educacao = new EducacaoBens();
+            educacao.setBens(new Bens());
+            beneficiario.setEducacaoBens(educacao);
+        } else if (beneficiario.getEducacaoBens().getBens() == null) {
             beneficiario.getEducacaoBens().setBens(new Bens());
         }
-        
+
         if (beneficiario.getColetas() == null) {
             beneficiario.setColetas(new ArrayList<>());
         }
