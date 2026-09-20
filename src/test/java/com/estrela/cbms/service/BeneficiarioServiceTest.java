@@ -109,6 +109,61 @@ class BeneficiarioServiceTest {
     }
 
     @Test
+    @DisplayName("Deve permitir inativar beneficiário com motivo")
+    void inativarBeneficiarioComMotivo() {
+        Beneficiario beneficiarioExistente = new Beneficiario();
+        beneficiarioExistente.setId("1");
+        beneficiarioExistente.setNomeCompleto("João da Silva");
+        beneficiarioExistente.setCpf("123.456.789-00");
+        beneficiarioExistente.setAtivo(true);
+
+        when(beneficiarioRepository.findById("1")).thenReturn(Optional.of(beneficiarioExistente));
+        when(beneficiarioRepository.save(any(Beneficiario.class))).thenAnswer(invocation -> invocation.getArgument(0));
+
+        Beneficiario paraAtualizar = new Beneficiario();
+        paraAtualizar.setId("1");
+        paraAtualizar.setNomeCompleto("João da Silva");
+        paraAtualizar.setCpf("123.456.789-00");
+        paraAtualizar.setAtivo(false);
+        paraAtualizar.setMotivoInativacao("Mudou de cidade");
+
+        Beneficiario atualizado = beneficiarioService.atualizarBeneficiario(paraAtualizar);
+
+        assertNotNull(atualizado);
+        assertFalse(atualizado.getAtivo());
+        assertEquals("Mudou de cidade", atualizado.getMotivoInativacao());
+        verify(beneficiarioRepository, times(1)).save(paraAtualizar);
+    }
+
+    @Test
+    @DisplayName("Deve limpar motivo de inativação ao reativar beneficiário")
+    void reativarBeneficiarioLimpaMotivo() {
+        Beneficiario beneficiarioExistente = new Beneficiario();
+        beneficiarioExistente.setId("1");
+        beneficiarioExistente.setNomeCompleto("João da Silva");
+        beneficiarioExistente.setCpf("123.456.789-00");
+        beneficiarioExistente.setAtivo(false);
+        beneficiarioExistente.setMotivoInativacao("Mudou de cidade");
+
+        when(beneficiarioRepository.findById("1")).thenReturn(Optional.of(beneficiarioExistente));
+        when(beneficiarioRepository.save(any(Beneficiario.class))).thenAnswer(invocation -> invocation.getArgument(0));
+
+        Beneficiario paraAtualizar = new Beneficiario();
+        paraAtualizar.setId("1");
+        paraAtualizar.setNomeCompleto("João da Silva");
+        paraAtualizar.setCpf("123.456.789-00");
+        paraAtualizar.setAtivo(true);
+        paraAtualizar.setMotivoInativacao("Mudou de cidade");
+
+        Beneficiario atualizado = beneficiarioService.atualizarBeneficiario(paraAtualizar);
+
+        assertNotNull(atualizado);
+        assertTrue(atualizado.getAtivo());
+        assertNull(atualizado.getMotivoInativacao());
+        verify(beneficiarioRepository, times(1)).save(paraAtualizar);
+    }
+
+    @Test
     @DisplayName("Deve lançar exceção ao tentar atualizar sem ID")
     void atualizarBeneficiarioSemId() {
         beneficiario.setId(null);

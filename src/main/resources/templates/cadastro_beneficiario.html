@@ -113,11 +113,15 @@
                 <div class="row">
                     <div class="col-md-6 mb-3">
                         <label class="form-label">Status</label>
-                        <select th:field="*{ativo}" class="form-select">
+                        <select th:field="*{ativo}" class="form-select" id="statusSelect">
                             <option th:value="true">Ativo</option>
                             <option th:value="false">Inativo</option>
                         </select>
                     </div>
+                </div>
+                <div class="mb-3 d-none" id="motivoInativacaoDiv">
+                    <label class="form-label">Motivo da Inativação</label>
+                    <textarea th:field="*{motivoInativacao}" class="form-control" rows="3" placeholder="Descreva o motivo da inativação..."></textarea>
                 </div>
                 <div class="mb-3">
                     <label class="form-label">Observações</label>
@@ -595,10 +599,28 @@
         });
     }
 
+    // Controle de visibilidade do motivo de inativação
+    const statusSelect = document.getElementById('statusSelect');
+    const motivoDiv = document.getElementById('motivoInativacaoDiv');
+
+    function toggleMotivoField() {
+        if (statusSelect.value === 'false') {
+            motivoDiv.classList.remove('d-none');
+        } else {
+            motivoDiv.classList.add('d-none');
+        }
+    }
+
+    if (statusSelect) {
+        statusSelect.addEventListener('change', toggleMotivoField);
+        // Verifica estado inicial ao carregar a página
+        toggleMotivoField();
+    }
+
     // Inicialização e escuta de eventos para o formulário
     document.addEventListener('DOMContentLoaded', () => {
         atualizarStatusAbas();
-        
+
         const formEl = document.getElementById('beneficiarioForm');
         if (formEl) {
             formEl.addEventListener('input', atualizarStatusAbas);

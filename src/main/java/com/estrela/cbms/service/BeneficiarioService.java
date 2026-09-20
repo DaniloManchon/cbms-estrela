@@ -50,6 +50,11 @@ public class BeneficiarioService {
             beneficiario.setColetas(existente.getColetas());
         }
 
+        // Se reativar o beneficiário, limpa o motivo de inativação
+        if (Boolean.TRUE.equals(beneficiario.getAtivo()) && beneficiario.getMotivoInativacao() != null) {
+            beneficiario.setMotivoInativacao(null);
+        }
+
         return beneficiarioRepository.save(beneficiario);
     }
 

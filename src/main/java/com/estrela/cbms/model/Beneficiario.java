@@ -56,6 +56,9 @@ public class Beneficiario {
     @JsonProperty("ativo")
     private Boolean ativo = true;
 
+    @JsonProperty("motivo_inativacao")
+    private String motivoInativacao;
+
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;
