@@ -50,7 +50,7 @@
                         <label class="form-label d-block">Foto de Perfil</label>
                         <div class="webcam-container">
                             <video id="webcam-preview" autoplay playsinline></video>
-                            <img id="photo-preview" th:src="${beneficiario.foto != null ? beneficiario.foto : ''}" th:style="${beneficiario.foto != null ? 'display:block' : 'display:none'}">
+                            <img id="photo-preview" th:src="${beneficiario.foto != null && beneficiario.foto != '' ? beneficiario.foto : ''}" th:style="${beneficiario.foto != null && beneficiario.foto != '' ? 'display:block' : 'display:none'}">
                             <div id="placeholder" class="photo-placeholder" th:style="${beneficiario.foto == null || beneficiario.foto == '' ? 'display:flex' : 'display:none'}">
                                 <i class="bi bi-camera fs-1"></i>
                                 <span>Sem foto</span>
