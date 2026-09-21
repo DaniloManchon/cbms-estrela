@@ -9,9 +9,9 @@ import org.springframework.data.annotation.Id;
 import org.springframework.data.mongodb.core.index.Indexed;
 import org.springframework.data.mongodb.core.mapping.Document;
 import java.util.List;
-import java.util.Objects;
 
 @Data
+@EqualsAndHashCode(of = "id")
 @Document(collection = "beneficiarios")
 public class Beneficiario {
 
@@ -53,16 +53,9 @@ public class Beneficiario {
 
     private List<Coleta> coletas;
 
-    @Override
-    public boolean equals(Object o) {
-        if (this == o) return true;
-        if (o == null || getClass() != o.getClass()) return false;
-        Beneficiario that = (Beneficiario) o;
-        return Objects.equals(id, that.id);
-    }
+    @JsonProperty("ativo")
+    private Boolean ativo = true;
 
-    @Override
-    public int hashCode() {
-        return Objects.hashCode(id);
-    }
+    @JsonProperty("motivo_inativacao")
+    private String motivoInativacao;
 }

@@ -11,6 +11,7 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
@@ -39,9 +40,173 @@ class BeneficiarioServiceTest {
         beneficiario.setCpf("123.456.789-00");
     }
 
+    // ===== TESTES PARA CRIAR NOVO BENEFICIÁRIO =====
+
     @Test
-    @DisplayName("Deve salvar um novo beneficiário com sucesso")
-    void salvarComSucesso() {
+    @DisplayName("Deve criar novo beneficiário com sucesso")
+    void criarBeneficiarioComSucesso() {
+        beneficiario.setId(null);
+        when(beneficiarioRepository.findByCpf(anyString())).thenReturn(Optional.empty());
+        when(beneficiarioRepository.save(any(Beneficiario.class))).thenReturn(beneficiario);
+
+        Beneficiario criado = beneficiarioService.criarBeneficiario(beneficiario);
+
+        assertNotNull(criado);
+        assertEquals(beneficiario.getCpf(), criado.getCpf());
+        assertTrue(criado.getCodigoBarras().startsWith("EST"));
+        verify(beneficiarioRepository, times(1)).save(beneficiario);
+    }
+
+    @Test
+    @DisplayName("Deve lançar exceção ao criar beneficiário com CPF duplicado")
+    void criarBeneficiarioComCpfDuplicado() {
+        beneficiario.setId(null);
+        Beneficiario existente = new Beneficiario();
+        existente.setId("2");
+        existente.setCpf("123.456.789-00");
+
+        when(beneficiarioRepository.findByCpf(anyString())).thenReturn(Optional.of(existente));
+
+        RuntimeException exception = assertThrows(RuntimeException.class, () -> {
+            beneficiarioService.criarBeneficiario(beneficiario);
+        });
+
+        assertEquals("Já existe um beneficiário cadastrado com este CPF.", exception.getMessage());
+        verify(beneficiarioRepository, never()).save(any());
+    }
+
+    // ===== TESTES PARA ATUALIZAR BENEFICIÁRIO =====
+
+    @Test
+    @DisplayName("Deve atualizar beneficiário existente preservando coletas")
+    void atualizarBeneficiarioPreservandoColetas() {
+        List<Coleta> coletasExistentes = new ArrayList<>();
+        coletasExistentes.add(new Coleta(LocalDateTime.now().minusDays(5)));
+        coletasExistentes.add(new Coleta(LocalDateTime.now().minusDays(1)));
+
+        Beneficiario beneficiarioExistente = new Beneficiario();
+        beneficiarioExistente.setId("1");
+        beneficiarioExistente.setNomeCompleto("João da Silva");
+        beneficiarioExistente.setCpf("123.456.789-00");
+        beneficiarioExistente.setColetas(coletasExistentes);
+
+        when(beneficiarioRepository.findById("1")).thenReturn(Optional.of(beneficiarioExistente));
+        when(beneficiarioRepository.save(any(Beneficiario.class))).thenAnswer(invocation -> invocation.getArgument(0));
+
+        Beneficiario paraAtualizar = new Beneficiario();
+        paraAtualizar.setId("1");
+        paraAtualizar.setNomeCompleto("João da Silva Atualizado");
+        paraAtualizar.setCpf("123.456.789-00");
+        paraAtualizar.setColetas(null);
+
+        Beneficiario atualizado = beneficiarioService.atualizarBeneficiario(paraAtualizar);
+
+        assertNotNull(atualizado);
+        assertEquals(coletasExistentes, atualizado.getColetas());
+        assertEquals("João da Silva Atualizado", atualizado.getNomeCompleto());
+        assertEquals(2, atualizado.getColetas().size());
+        verify(beneficiarioRepository, times(1)).save(paraAtualizar);
+    }
+
+    @Test
+    @DisplayName("Deve permitir inativar beneficiário com motivo")
+    void inativarBeneficiarioComMotivo() {
+        Beneficiario beneficiarioExistente = new Beneficiario();
+        beneficiarioExistente.setId("1");
+        beneficiarioExistente.setNomeCompleto("João da Silva");
+        beneficiarioExistente.setCpf("123.456.789-00");
+        beneficiarioExistente.setAtivo(true);
+
+        when(beneficiarioRepository.findById("1")).thenReturn(Optional.of(beneficiarioExistente));
+        when(beneficiarioRepository.save(any(Beneficiario.class))).thenAnswer(invocation -> invocation.getArgument(0));
+
+        Beneficiario paraAtualizar = new Beneficiario();
+        paraAtualizar.setId("1");
+        paraAtualizar.setNomeCompleto("João da Silva");
+        paraAtualizar.setCpf("123.456.789-00");
+        paraAtualizar.setAtivo(false);
+        paraAtualizar.setMotivoInativacao("Mudou de cidade");
+
+        Beneficiario atualizado = beneficiarioService.atualizarBeneficiario(paraAtualizar);
+
+        assertNotNull(atualizado);
+        assertFalse(atualizado.getAtivo());
+        assertEquals("Mudou de cidade", atualizado.getMotivoInativacao());
+        verify(beneficiarioRepository, times(1)).save(paraAtualizar);
+    }
+
+    @Test
+    @DisplayName("Deve limpar motivo de inativação ao reativar beneficiário")
+    void reativarBeneficiarioLimpaMotivo() {
+        Beneficiario beneficiarioExistente = new Beneficiario();
+        beneficiarioExistente.setId("1");
+        beneficiarioExistente.setNomeCompleto("João da Silva");
+        beneficiarioExistente.setCpf("123.456.789-00");
+        beneficiarioExistente.setAtivo(false);
+        beneficiarioExistente.setMotivoInativacao("Mudou de cidade");
+
+        when(beneficiarioRepository.findById("1")).thenReturn(Optional.of(beneficiarioExistente));
+        when(beneficiarioRepository.save(any(Beneficiario.class))).thenAnswer(invocation -> invocation.getArgument(0));
+
+        Beneficiario paraAtualizar = new Beneficiario();
+        paraAtualizar.setId("1");
+        paraAtualizar.setNomeCompleto("João da Silva");
+        paraAtualizar.setCpf("123.456.789-00");
+        paraAtualizar.setAtivo(true);
+        paraAtualizar.setMotivoInativacao("Mudou de cidade");
+
+        Beneficiario atualizado = beneficiarioService.atualizarBeneficiario(paraAtualizar);
+
+        assertNotNull(atualizado);
+        assertTrue(atualizado.getAtivo());
+        assertNull(atualizado.getMotivoInativacao());
+        verify(beneficiarioRepository, times(1)).save(paraAtualizar);
+    }
+
+    @Test
+    @DisplayName("Deve lançar exceção ao tentar atualizar sem ID")
+    void atualizarBeneficiarioSemId() {
+        beneficiario.setId(null);
+
+        RuntimeException exception = assertThrows(RuntimeException.class, () -> {
+            beneficiarioService.atualizarBeneficiario(beneficiario);
+        });
+
+        assertEquals("ID do beneficiário é obrigatório para atualização.", exception.getMessage());
+        verify(beneficiarioRepository, never()).save(any());
+    }
+
+    @Test
+    @DisplayName("Deve lançar exceção ao tentar atualizar para CPF já existente em outro beneficiário")
+    void atualizarParaCpfDeDoutrobeneficiario() {
+        Beneficiario beneficiarioExistente = new Beneficiario();
+        beneficiarioExistente.setId("1");
+        beneficiarioExistente.setCpf("123.456.789-00");
+
+        Beneficiario outroBeneficiario = new Beneficiario();
+        outroBeneficiario.setId("2");
+        outroBeneficiario.setCpf("999.999.999-99");
+
+        when(beneficiarioRepository.findById("1")).thenReturn(Optional.of(beneficiarioExistente));
+        when(beneficiarioRepository.findByCpf("999.999.999-99")).thenReturn(Optional.of(outroBeneficiario));
+
+        Beneficiario paraAtualizar = new Beneficiario();
+        paraAtualizar.setId("1");
+        paraAtualizar.setCpf("999.999.999-99");
+
+        RuntimeException exception = assertThrows(RuntimeException.class, () -> {
+            beneficiarioService.atualizarBeneficiario(paraAtualizar);
+        });
+
+        assertEquals("Já existe um beneficiário cadastrado com este CPF.", exception.getMessage());
+        verify(beneficiarioRepository, never()).save(any());
+    }
+
+    // ===== TESTES PARA FACHADA SALVAR =====
+
+    @Test
+    @DisplayName("Deve rotear para criarBeneficiario quando ID é nulo")
+    void salvarRotaParaCriarQuandoIdNulo() {
         beneficiario.setId(null);
         when(beneficiarioRepository.findByCpf(anyString())).thenReturn(Optional.empty());
         when(beneficiarioRepository.save(any(Beneficiario.class))).thenReturn(beneficiario);
@@ -49,56 +214,31 @@ class BeneficiarioServiceTest {
         Beneficiario salvo = beneficiarioService.salvar(beneficiario);
 
         assertNotNull(salvo);
-        assertEquals(beneficiario.getCpf(), salvo.getCpf());
+        assertTrue(salvo.getCodigoBarras().startsWith("EST"));
         verify(beneficiarioRepository, times(1)).save(beneficiario);
     }
 
     @Test
-    @DisplayName("Deve lançar exceção ao salvar beneficiário com CPF já cadastrado")
-    void salvarComCpfDuplicado() {
-        beneficiario.setId(null);
-        Beneficiario outroBeneficiario = new Beneficiario();
-        outroBeneficiario.setId("2");
-        outroBeneficiario.setCpf("123.456.789-00");
-
-        when(beneficiarioRepository.findByCpf(anyString())).thenReturn(Optional.of(outroBeneficiario));
-
-        RuntimeException exception = assertThrows(RuntimeException.class, () -> {
-            beneficiarioService.salvar(beneficiario);
-        });
-
-        assertEquals("Já existe um beneficiário cadastrado com este CPF.", exception.getMessage());
-        verify(beneficiarioRepository, never()).save(any());
-    }
-
-    @Test
-    @DisplayName("Deve permitir atualizar o mesmo beneficiário mantendo o CPF e preservando coletas")
-    void atualizarMesmoBeneficiarioPreservandoColetas() {
-        List<Coleta> coletasExistentes = new ArrayList<>();
-        coletasExistentes.add(new Coleta());
-        beneficiario.setColetas(coletasExistentes);
+    @DisplayName("Deve rotear para atualizarBeneficiario quando ID não é nulo")
+    void salvarRotaParaAtualizarQuandoIdPresente() {
+        List<Coleta> coletas = new ArrayList<>();
+        coletas.add(new Coleta(LocalDateTime.now()));
+        beneficiario.setColetas(coletas);
 
         when(beneficiarioRepository.findById("1")).thenReturn(Optional.of(beneficiario));
-        when(beneficiarioRepository.findByCpf(anyString())).thenReturn(Optional.of(beneficiario));
         when(beneficiarioRepository.save(any(Beneficiario.class))).thenAnswer(invocation -> invocation.getArgument(0));
 
-        Beneficiario paraAtualizar = new Beneficiario();
-        paraAtualizar.setId("1");
-        paraAtualizar.setNomeCompleto("João da Silva Atualizado");
-        paraAtualizar.setCpf("123.456.789-00");
-        paraAtualizar.setColetas(null); 
-
-        Beneficiario salvo = beneficiarioService.salvar(paraAtualizar);
+        Beneficiario salvo = beneficiarioService.salvar(beneficiario);
 
         assertNotNull(salvo);
-        assertEquals(coletasExistentes, salvo.getColetas());
-        assertEquals("João da Silva Atualizado", salvo.getNomeCompleto());
-        verify(beneficiarioRepository, times(1)).save(paraAtualizar);
+        assertEquals(coletas, salvo.getColetas());
+        verify(beneficiarioRepository, times(1)).save(beneficiario);
     }
 
     @Test
     @DisplayName("Deve registrar uma nova coleta para um beneficiário existente")
     void registrarColetaComSucesso() {
+        beneficiario.setColetas(new ArrayList<>());
         when(beneficiarioRepository.findByCpf(anyString())).thenReturn(Optional.of(beneficiario));
         when(beneficiarioRepository.save(any(Beneficiario.class))).thenAnswer(invocation -> invocation.getArgument(0));
 
@@ -122,22 +262,81 @@ class BeneficiarioServiceTest {
     }
 
     @Test
-    @DisplayName("Deve buscar responsáveis por termo de pesquisa")
-    void buscarPorTermo() {
-        List<Beneficiario> lista = List.of(beneficiario);
+    @DisplayName("Deve lançar exceção ao tentar registrar coleta para beneficiário inativo")
+    void registrarColetaBeneficiarioInativo() {
+        Beneficiario beneficiarioInativo = new Beneficiario();
+        beneficiarioInativo.setId("1");
+        beneficiarioInativo.setCpf("123.456.789-00");
+        beneficiarioInativo.setAtivo(false);
+        beneficiarioInativo.setMotivoInativacao("Mudou de cidade");
+
+        when(beneficiarioRepository.findByCpf(anyString())).thenReturn(Optional.of(beneficiarioInativo));
+
+        RuntimeException exception = assertThrows(RuntimeException.class, () -> {
+            beneficiarioService.registrarColeta("123.456.789-00");
+        });
+
+        assertEquals("Não é possível registrar coleta para beneficiário inativo.", exception.getMessage());
+        verify(beneficiarioRepository, never()).save(any());
+    }
+
+    // ===== TESTES PARA LISTAGEM E BUSCA COM ORDENAÇÃO =====
+
+    @Test
+    @DisplayName("Deve listar todos beneficiários com coletas ordenadas por data decrescente")
+    void listarTodosComColetasOrdenadas() {
+        Beneficiario ben1 = new Beneficiario();
+        ben1.setId("1");
+        ben1.setNomeCompleto("João");
+        List<Coleta> coletas1 = new ArrayList<>();
+        coletas1.add(new Coleta(LocalDateTime.now().minusDays(5)));
+        coletas1.add(new Coleta(LocalDateTime.now().minusDays(1)));
+        coletas1.add(new Coleta(LocalDateTime.now().minusDays(10)));
+        ben1.setColetas(coletas1);
+
+        when(beneficiarioRepository.findAll()).thenReturn(List.of(ben1));
+
+        List<Beneficiario> resultado = beneficiarioService.listarTodos();
+
+        assertNotNull(resultado);
+        assertEquals(1, resultado.size());
+        assertEquals(3, resultado.get(0).getColetas().size());
+        // Verifica se a coleta mais recente está primeiro
+        assertTrue(resultado.get(0).getColetas().get(0).getDataColeta()
+                .isAfter(resultado.get(0).getColetas().get(1).getDataColeta()));
+        assertTrue(resultado.get(0).getColetas().get(1).getDataColeta()
+                .isAfter(resultado.get(0).getColetas().get(2).getDataColeta()));
+    }
+
+    @Test
+    @DisplayName("Deve buscar beneficiários com coletas ordenadas por data decrescente")
+    void buscarComColetasOrdenadas() {
+        Beneficiario ben1 = new Beneficiario();
+        ben1.setId("1");
+        ben1.setNomeCompleto("João");
+        List<Coleta> coletas1 = new ArrayList<>();
+        coletas1.add(new Coleta(LocalDateTime.now().minusDays(3)));
+        coletas1.add(new Coleta(LocalDateTime.now().minusDays(1)));
+        ben1.setColetas(coletas1);
+
         when(beneficiarioRepository.findByNomeCompletoContainingIgnoreCaseOrCpfContainingOrCodigoBarrasContaining("João","João","João"))
-                .thenReturn(lista);
+                .thenReturn(List.of(ben1));
 
         List<Beneficiario> resultado = beneficiarioService.buscar("João");
 
         assertFalse(resultado.isEmpty());
         assertEquals(1, resultado.size());
-        assertEquals("João da Silva", resultado.get(0).getNomeCompleto());
+        assertEquals(2, resultado.get(0).getColetas().size());
+        // Verifica se a coleta mais recente está primeiro
+        assertTrue(resultado.get(0).getColetas().get(0).getDataColeta()
+                .isAfter(resultado.get(0).getColetas().get(1).getDataColeta()));
     }
 
     @Test
     @DisplayName("Deve listar todos quando o termo de busca for nulo ou vazio")
     void buscarComTermoVazio() {
+        when(beneficiarioRepository.findAll()).thenReturn(new ArrayList<>());
+
         beneficiarioService.buscar("");
         verify(beneficiarioRepository, times(1)).findAll();
 
