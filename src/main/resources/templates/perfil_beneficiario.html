@@ -142,11 +142,15 @@
                         </li>
                     </ul>
                     <div class="mt-3">
-                        <button class="btn btn-sm btn-primary" data-bs-toggle="collapse" data-bs-target="#formDoacao">
+                        <button class="btn btn-sm btn-primary"
+                                data-bs-toggle="collapse"
+                                data-bs-target="#formDoacao"
+                                th:disabled="${!beneficiario.ativo}"
+                                th:title="${beneficiario.ativo ? 'Adicionar Doação' : 'Beneficiário inativo'}">
                             <i class="bi bi-plus-circle"></i> Adicionar Doação
                         </button>
                     </div>
-                    <div class="collapse mt-3" id="formDoacao">
+                    <div class="collapse mt-3" id="formDoacao" th:if="${beneficiario.ativo}">
                         <form th:action="@{'/beneficiario/' + ${beneficiario.id} + '/doacao'}" method="post" class="border p-3 rounded">
                             <div class="mb-3">
                                 <label for="dataDoacao" class="form-label">Data da Doação</label>
