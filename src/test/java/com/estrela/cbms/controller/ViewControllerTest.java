@@ -9,11 +9,12 @@ import org.springframework.boot.webmvc.test.autoconfigure.WebMvcTest;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.MockMvc;
 
+import java.time.LocalDateTime;
 import java.util.Collections;
 
-import static org.mockito.ArgumentMatchers.anyString;
+import static org.mockito.ArgumentMatchers.*;
 import static org.mockito.Mockito.when;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
 @WebMvcTest(ViewController.class)
@@ -32,6 +33,7 @@ class ViewControllerTest {
         beneficiario.setCpf("191.000.000-00");
         beneficiario.setCelular("(11) 98888-8888");
         beneficiario.setColetas(Collections.emptyList());
+        beneficiario.setDoacoes(Collections.emptyList());
         beneficiario.setIdentificacaoFamiliar(Collections.emptyList());
 
         beneficiario.setRenda(new com.estrela.cbms.model.Renda());
@@ -78,6 +80,36 @@ class ViewControllerTest {
                 .andExpect(status().isOk())
                 .andExpect(view().name("perfil_beneficiario"))
                 .andExpect(model().attribute("beneficiario", beneficiario));
+    }
+
+    @Test
+    @DisplayName("Deve registrar uma doação com sucesso")
+    void registrarDoacaoComSucesso() throws Exception {
+        Beneficiario beneficiario = criarBeneficiarioMock();
+
+        when(beneficiarioService.buscarPorId("1")).thenReturn(beneficiario);
+        when(beneficiarioService.registrarDoacao(any(), any(LocalDateTime.class), anyString()))
+                .thenReturn(beneficiario);
+
+        mockMvc.perform(post("/beneficiario/1/doacao")
+                .param("dataDoacao", "2025-03-15T10:30")
+                .param("descricaoDoacao", "Alimentos básicos"))
+                .andExpect(status().is3xxRedirection())
+                .andExpect(redirectedUrl("/perfil/1"))
+                .andExpect(flash().attributeExists("sucesso"));
+    }
+
+    @Test
+    @DisplayName("Deve tratar erro ao registrar doação")
+    void registrarDoacaoComErro() throws Exception {
+        when(beneficiarioService.buscarPorId("1")).thenThrow(new RuntimeException("Beneficiário não encontrado"));
+
+        mockMvc.perform(post("/beneficiario/1/doacao")
+                .param("dataDoacao", "2025-03-15T10:30")
+                .param("descricaoDoacao", "Alimentos básicos"))
+                .andExpect(status().is3xxRedirection())
+                .andExpect(redirectedUrl("/perfil/1"))
+                .andExpect(flash().attributeExists("erro"));
     }
 
 }

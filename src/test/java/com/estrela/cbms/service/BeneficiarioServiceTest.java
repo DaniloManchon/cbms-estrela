@@ -2,6 +2,7 @@ package com.estrela.cbms.service;
 
 import com.estrela.cbms.model.Coleta;
 import com.estrela.cbms.model.Beneficiario;
+import com.estrela.cbms.model.Doacoes;
 import com.estrela.cbms.repository.BeneficiarioRepository;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
@@ -355,6 +356,133 @@ class BeneficiarioServiceTest {
         assertNotNull(encontrado.getRenda());
         assertNotNull(encontrado.getMoradia());
         assertNotNull(encontrado.getEducacaoBens());
+        verify(beneficiarioRepository, times(1)).findById("1");
+    }
+
+    // ===== TESTES PARA REGISTRAR DOAÇÕES =====
+
+    @Test
+    @DisplayName("Deve registrar uma nova doação para um beneficiário")
+    void registrarDoacaoComSucesso() {
+        beneficiario.setDoacoes(new ArrayList<>());
+        when(beneficiarioRepository.save(any(Beneficiario.class))).thenAnswer(invocation -> invocation.getArgument(0));
+
+        LocalDateTime dataDoacao = LocalDateTime.now();
+        String descricaoDoacao = "Alimentos básicos";
+
+        beneficiarioService.registrarDoacao(beneficiario, dataDoacao, descricaoDoacao);
+
+        assertNotNull(beneficiario.getDoacoes());
+        assertEquals(1, beneficiario.getDoacoes().size());
+        assertEquals(dataDoacao, beneficiario.getDoacoes().get(0).getDataDoacao());
+        assertEquals(descricaoDoacao, beneficiario.getDoacoes().get(0).getDescricaoDoacao());
+        verify(beneficiarioRepository, times(1)).save(beneficiario);
+    }
+
+    @Test
+    @DisplayName("Deve inicializar lista de doações se for nula ao registrar doação")
+    void registrarDoacaoInicializaListaNula() {
+        beneficiario.setDoacoes(null);
+        when(beneficiarioRepository.save(any(Beneficiario.class))).thenAnswer(invocation -> invocation.getArgument(0));
+
+        LocalDateTime dataDoacao = LocalDateTime.now();
+        beneficiarioService.registrarDoacao(beneficiario, dataDoacao, "Doação de roupas");
+
+        assertNotNull(beneficiario.getDoacoes());
+        assertEquals(1, beneficiario.getDoacoes().size());
+        verify(beneficiarioRepository, times(1)).save(beneficiario);
+    }
+
+    @Test
+    @DisplayName("Deve preservar doações ao atualizar beneficiário")
+    void atualizarBeneficiarioPreservandoDoacoes() {
+        List<Doacoes> doacoesExistentes = new ArrayList<>();
+        doacoesExistentes.add(new Doacoes(LocalDateTime.now().minusDays(5), "Alimentos"));
+        doacoesExistentes.add(new Doacoes(LocalDateTime.now().minusDays(1), "Roupas"));
+
+        Beneficiario beneficiarioExistente = new Beneficiario();
+        beneficiarioExistente.setId("1");
+        beneficiarioExistente.setNomeCompleto("João da Silva");
+        beneficiarioExistente.setCpf("123.456.789-00");
+        beneficiarioExistente.setDoacoes(doacoesExistentes);
+
+        when(beneficiarioRepository.findById("1")).thenReturn(Optional.of(beneficiarioExistente));
+        when(beneficiarioRepository.save(any(Beneficiario.class))).thenAnswer(invocation -> invocation.getArgument(0));
+
+        Beneficiario paraAtualizar = new Beneficiario();
+        paraAtualizar.setId("1");
+        paraAtualizar.setNomeCompleto("João da Silva Atualizado");
+        paraAtualizar.setCpf("123.456.789-00");
+        paraAtualizar.setDoacoes(null);
+
+        Beneficiario atualizado = beneficiarioService.atualizarBeneficiario(paraAtualizar);
+
+        assertNotNull(atualizado);
+        assertEquals(doacoesExistentes, atualizado.getDoacoes());
+        assertEquals(2, atualizado.getDoacoes().size());
+        verify(beneficiarioRepository, times(1)).save(paraAtualizar);
+    }
+
+    @Test
+    @DisplayName("Deve listar todos beneficiários com doações ordenadas por data decrescente")
+    void listarTodosComDoacoesOrdenadas() {
+        Beneficiario ben1 = new Beneficiario();
+        ben1.setId("1");
+        ben1.setNomeCompleto("João");
+        List<Doacoes> doacoes1 = new ArrayList<>();
+        doacoes1.add(new Doacoes(LocalDateTime.now().minusDays(5), "Alimentos"));
+        doacoes1.add(new Doacoes(LocalDateTime.now().minusDays(1), "Roupas"));
+        doacoes1.add(new Doacoes(LocalDateTime.now().minusDays(10), "Eletrônicos"));
+        ben1.setDoacoes(doacoes1);
+
+        when(beneficiarioRepository.findAll()).thenReturn(List.of(ben1));
+
+        List<Beneficiario> resultado = beneficiarioService.listarTodos();
+
+        assertNotNull(resultado);
+        assertEquals(1, resultado.size());
+        assertEquals(3, resultado.get(0).getDoacoes().size());
+        // Verifica se a doação mais recente está primeiro
+        assertTrue(resultado.get(0).getDoacoes().get(0).getDataDoacao()
+                .isAfter(resultado.get(0).getDoacoes().get(1).getDataDoacao()));
+        assertTrue(resultado.get(0).getDoacoes().get(1).getDataDoacao()
+                .isAfter(resultado.get(0).getDoacoes().get(2).getDataDoacao()));
+    }
+
+    @Test
+    @DisplayName("Deve buscar beneficiários com doações ordenadas por data decrescente")
+    void buscarComDoacoesOrdenadas() {
+        Beneficiario ben1 = new Beneficiario();
+        ben1.setId("1");
+        ben1.setNomeCompleto("João");
+        List<Doacoes> doacoes1 = new ArrayList<>();
+        doacoes1.add(new Doacoes(LocalDateTime.now().minusDays(3), "Alimentos"));
+        doacoes1.add(new Doacoes(LocalDateTime.now().minusDays(1), "Roupas"));
+        ben1.setDoacoes(doacoes1);
+
+        when(beneficiarioRepository.findByNomeCompletoContainingIgnoreCaseOrCpfContainingOrCodigoBarrasContaining("João","João","João"))
+                .thenReturn(List.of(ben1));
+
+        List<Beneficiario> resultado = beneficiarioService.buscar("João");
+
+        assertFalse(resultado.isEmpty());
+        assertEquals(1, resultado.size());
+        assertEquals(2, resultado.get(0).getDoacoes().size());
+        // Verifica se a doação mais recente está primeiro
+        assertTrue(resultado.get(0).getDoacoes().get(0).getDataDoacao()
+                .isAfter(resultado.get(0).getDoacoes().get(1).getDataDoacao()));
+    }
+
+    @Test
+    @DisplayName("Deve buscar por ID e inicializar lista de doações")
+    void buscarPorIdEInicializarDoacoes() {
+        when(beneficiarioRepository.findById("1")).thenReturn(Optional.of(beneficiario));
+
+        Beneficiario encontrado = beneficiarioService.buscarPorId("1");
+
+        assertNotNull(encontrado);
+        assertNotNull(encontrado.getDoacoes());
+        assertTrue(encontrado.getDoacoes().isEmpty());
         verify(beneficiarioRepository, times(1)).findById("1");
     }
 }
