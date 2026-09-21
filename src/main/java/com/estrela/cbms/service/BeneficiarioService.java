@@ -45,9 +45,12 @@ public class BeneficiarioService {
             }
         }
 
-        // Preserva as coletas existentes - nunca sobrescreve o histórico
+        // Preserva as coletas e doações existentes - nunca sobrescreve o histórico
         if (existente.getColetas() != null && !existente.getColetas().isEmpty()) {
             beneficiario.setColetas(existente.getColetas());
+        }
+        if (existente.getDoacoes() != null && !existente.getDoacoes().isEmpty()) {
+            beneficiario.setDoacoes(existente.getDoacoes());
         }
 
         // Se reativar o beneficiário, limpa o motivo de inativação
@@ -84,19 +87,25 @@ public class BeneficiarioService {
         return beneficiarioRepository.save(beneficiario);
     }
 
+    public Beneficiario registrarDoacao(Beneficiario beneficiario, LocalDateTime dataDoacao, String descricaoDoacao) {
+        // Inicializa a lista de doações se for nula
+        if (beneficiario.getDoacoes() == null) {
+            beneficiario.setDoacoes(new ArrayList<>());
+        }
+
+        beneficiario.getDoacoes().add(new Doacoes(dataDoacao, descricaoDoacao));
+        return beneficiarioRepository.save(beneficiario);
+    }
+
     public List<Beneficiario> listarTodos() {
         List<Beneficiario> beneficiarios = beneficiarioRepository.findAll();
 
-        // forEach: para CADA beneficiário (b) na lista, execute o código dentro das chaves
-        // b -> { ... } significa: "receba um beneficiário chamado 'b' e faça isto:"
         beneficiarios.forEach(b -> {
             if (b.getColetas() != null) {
-                // sort: ordena a lista de coletas usando um comparador (lambda)
-                // (c1, c2) -> c2.getDataColeta().compareTo(c1.getDataColeta())
-                // c1 e c2 são duas coletas sendo comparadas
-                // c2.compareTo(c1) = ordem DECRESCENTE (mais recente primeiro)
-                // se fosse c1.compareTo(c2) seria crescente (mais antiga primeiro)
                 b.getColetas().sort((c1, c2) -> c2.getDataColeta().compareTo(c1.getDataColeta()));
+            }
+            if (b.getDoacoes() != null) {
+                b.getDoacoes().sort((d1, d2) -> d2.getDataDoacao().compareTo(d1.getDataDoacao()));
             }
         });
 
@@ -117,10 +126,12 @@ public class BeneficiarioService {
 
         List<Beneficiario> beneficiarios = beneficiarioRepository.findByNomeCompletoContainingIgnoreCaseOrCpfContainingOrCodigoBarrasContaining(termo, termo, termo);
 
-        // Ordena as coletas de cada beneficiário para que a mais recente fique primeiro
         beneficiarios.forEach(b -> {
             if (b.getColetas() != null) {
                 b.getColetas().sort((c1, c2) -> c2.getDataColeta().compareTo(c1.getDataColeta()));
+            }
+            if (b.getDoacoes() != null) {
+                b.getDoacoes().sort((d1, d2) -> d2.getDataDoacao().compareTo(d1.getDataDoacao()));
             }
         });
 
@@ -130,13 +141,17 @@ public class BeneficiarioService {
     public Beneficiario buscarPorId(String id) {
         Beneficiario beneficiario = beneficiarioRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("Beneficiário não encontrado."));
-        
+
         inicializarObjetosAninhados(beneficiario);
-        
+
         if (beneficiario.getColetas() != null) {
             beneficiario.getColetas().sort((c1, c2) -> c2.getDataColeta().compareTo(c1.getDataColeta()));
         }
-        
+
+        if (beneficiario.getDoacoes() != null) {
+            beneficiario.getDoacoes().sort((d1, d2) -> d2.getDataDoacao().compareTo(d1.getDataDoacao()));
+        }
+
         return beneficiario;
     }
 
@@ -172,6 +187,10 @@ public class BeneficiarioService {
 
         if (beneficiario.getColetas() == null) {
             beneficiario.setColetas(new ArrayList<>());
+        }
+
+        if (beneficiario.getDoacoes() == null) {
+            beneficiario.setDoacoes(new ArrayList<>());
         }
     }
 }

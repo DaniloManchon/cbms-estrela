@@ -14,6 +14,8 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 import jakarta.validation.Valid;
 import org.springframework.validation.BindingResult;
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 import java.util.List;
 import java.util.Optional;
 
@@ -102,5 +104,27 @@ public class ViewController {
             redirectAttributes.addFlashAttribute("erro", e.getMessage());
         }
         return "redirect:/";
+    }
+
+    @PostMapping("/beneficiario/{id}/doacao")
+    public String registrarDoacao(@PathVariable String id,
+                                   @RequestParam String dataDoacao,
+                                   @RequestParam String descricaoDoacao,
+                                   RedirectAttributes redirectAttributes) {
+        try {
+            log.debug("Tentando registrar doação para beneficiário: {}", id);
+            DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm");
+            LocalDateTime dataFormatada = LocalDateTime.parse(dataDoacao, formatter);
+
+            Beneficiario beneficiario = beneficiarioService.buscarPorId(id);
+            beneficiarioService.registrarDoacao(beneficiario, dataFormatada, descricaoDoacao);
+
+            log.debug("Doação registrada com sucesso!");
+            redirectAttributes.addFlashAttribute("sucesso", "Doação registrada com sucesso!");
+        } catch (Exception e) {
+            log.error("Erro ao registrar doação: {}", e.getMessage(), e);
+            redirectAttributes.addFlashAttribute("erro", "Erro ao registrar doação: " + e.getMessage());
+        }
+        return "redirect:/perfil/" + id;
     }
 }
