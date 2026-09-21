@@ -48,16 +48,16 @@ jobs:
           echo "Mensagem do commit: $COMMIT_MSG"
           
           # 3. Aplica as regras de incremento semântico baseadas no commit
-          if [[ "$COMMIT_MSG" == *"[major]"* ]] || [[ "$COMMIT_MSG" == *"[Major]"* ]] || [[ "$COMMIT_MSG" == *"#major"* ]] || [[ "$COMMIT_MSG" == *"BREAKING CHANGE"* ]]; then
+          if [[ "$COMMIT_MSG" == *"major"* ]] || [[ "$COMMIT_MSG" == *"Major"* ]]; then
             echo "Detectado incremento de MAJOR"
             NEW_MAJOR=$((MAJOR + 1))
             NEW_VERSION="$NEW_MAJOR.0.0"
-          elif [[ "$COMMIT_MSG" == *"[minor]"* ]] || [[ "$COMMIT_MSG" == *"#minor"* ]] || [[ "$COMMIT_MSG" == *"feat:"* ]] || [[ "$COMMIT_MSG" == *"feat("* ]]; then
+          elif [[ "$COMMIT_MSG" == *"minor"* ]] || [[ "$COMMIT_MSG" == *"Minor"* ]]; then
             echo "Detectado incremento de MINOR"
             NEW_MINOR=$((MINOR + 1))
             NEW_VERSION="$MAJOR.$NEW_MINOR.0"
           else
-            echo "Padrão ou detectado incremento de PATCH"
+            echo "Detectado incremento de PATCH"
             NEW_PATCH=$((PATCH + 1))
             NEW_VERSION="$MAJOR.$MINOR.$NEW_PATCH"
           fi
