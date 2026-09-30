@@ -105,7 +105,7 @@ public class BeneficiarioService {
             throw new RuntimeException("Nenhuma coleta para deletar.");
         }
 
-        beneficiario.getColetas().sort((c1, c2) -> c2.getDataColeta().compareTo(c1.getDataColeta()));
+        ordenarColetasEDoacoes(beneficiario);
 
         if (indice < 0 || indice >= beneficiario.getColetas().size()) {
             throw new RuntimeException("Índice de coleta inválido.");
@@ -123,7 +123,7 @@ public class BeneficiarioService {
             throw new RuntimeException("Nenhuma doação para deletar.");
         }
 
-        beneficiario.getDoacoes().sort((d1, d2) -> d2.getDataDoacao().compareTo(d1.getDataDoacao()));
+        ordenarColetasEDoacoes(beneficiario);
 
         if (indice < 0 || indice >= beneficiario.getDoacoes().size()) {
             throw new RuntimeException("Índice de doação inválido.");
@@ -133,18 +133,18 @@ public class BeneficiarioService {
         beneficiarioRepository.save(beneficiario);
     }
 
+    private void ordenarColetasEDoacoes(Beneficiario beneficiario) {
+        if (beneficiario.getColetas() != null) {
+            beneficiario.getColetas().sort((c1, c2) -> c2.getDataColeta().compareTo(c1.getDataColeta()));
+        }
+        if (beneficiario.getDoacoes() != null) {
+            beneficiario.getDoacoes().sort((d1, d2) -> d2.getDataDoacao().compareTo(d1.getDataDoacao()));
+        }
+    }
+
     public List<Beneficiario> listarTodos() {
         List<Beneficiario> beneficiarios = beneficiarioRepository.findAll();
-
-        beneficiarios.forEach(b -> {
-            if (b.getColetas() != null) {
-                b.getColetas().sort((c1, c2) -> c2.getDataColeta().compareTo(c1.getDataColeta()));
-            }
-            if (b.getDoacoes() != null) {
-                b.getDoacoes().sort((d1, d2) -> d2.getDataDoacao().compareTo(d1.getDataDoacao()));
-            }
-        });
-
+        beneficiarios.forEach(this::ordenarColetasEDoacoes);
         return beneficiarios;
     }
 
@@ -161,16 +161,7 @@ public class BeneficiarioService {
         }
 
         List<Beneficiario> beneficiarios = beneficiarioRepository.findByNomeCompletoContainingIgnoreCaseOrCpfContainingOrCodigoBarrasContaining(termo, termo, termo);
-
-        beneficiarios.forEach(b -> {
-            if (b.getColetas() != null) {
-                b.getColetas().sort((c1, c2) -> c2.getDataColeta().compareTo(c1.getDataColeta()));
-            }
-            if (b.getDoacoes() != null) {
-                b.getDoacoes().sort((d1, d2) -> d2.getDataDoacao().compareTo(d1.getDataDoacao()));
-            }
-        });
-
+        beneficiarios.forEach(this::ordenarColetasEDoacoes);
         return beneficiarios;
     }
 
@@ -179,14 +170,7 @@ public class BeneficiarioService {
                 .orElseThrow(() -> new RuntimeException("Beneficiário não encontrado."));
 
         inicializarObjetosAninhados(beneficiario);
-
-        if (beneficiario.getColetas() != null) {
-            beneficiario.getColetas().sort((c1, c2) -> c2.getDataColeta().compareTo(c1.getDataColeta()));
-        }
-
-        if (beneficiario.getDoacoes() != null) {
-            beneficiario.getDoacoes().sort((d1, d2) -> d2.getDataDoacao().compareTo(d1.getDataDoacao()));
-        }
+        ordenarColetasEDoacoes(beneficiario);
 
         return beneficiario;
     }
