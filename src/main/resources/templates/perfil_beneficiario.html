@@ -112,11 +112,16 @@
                     </div>
                     <ul class="list-group list-group-flush" th:unless="${beneficiario.coletas == null or beneficiario.coletas.empty}">
                         <li class="list-group-item d-flex justify-content-between align-items-center px-0"
-                            th:each="coleta : ${beneficiario.coletas}">
+                            th:each="coleta, stat : ${beneficiario.coletas}">
                             <div>
                                 <i class="bi bi-calendar-check text-success"></i>
                                 <span th:text="${#temporals.format(coleta.dataColeta, 'dd/MM/yyyy ''às'' HH:mm')}"></span>
                             </div>
+                            <form th:action="@{'/beneficiario/' + ${beneficiario.id} + '/coleta/' + ${stat.index} + '/deletar'}" method="post" class="d-inline">
+                                <button type="submit" class="btn btn-sm btn-outline-danger" title="Deletar coleta" onclick="return confirm('Tem certeza que deseja deletar esta coleta?');">
+                                    <i class="bi bi-trash"></i>
+                                </button>
+                            </form>
                         </li>
                     </ul>
                 </div>
@@ -129,7 +134,7 @@
                         Nenhuma doação registrada até o momento.
                     </div>
                     <ul class="list-group list-group-flush" th:unless="${beneficiario.doacoes == null or beneficiario.doacoes.empty}">
-                        <li class="list-group-item px-0 py-2" th:each="doacao : ${beneficiario.doacoes}">
+                        <li class="list-group-item px-0 py-2" th:each="doacao, stat : ${beneficiario.doacoes}">
                             <div class="d-flex justify-content-between align-items-start">
                                 <div class="flex-grow-1">
                                     <p class="mb-1">
@@ -138,6 +143,11 @@
                                     </p>
                                     <p class="mb-0 small text-muted" th:text="${doacao.descricaoDoacao}"></p>
                                 </div>
+                                <form th:action="@{'/beneficiario/' + ${beneficiario.id} + '/doacao/' + ${stat.index} + '/deletar'}" method="post" class="d-inline ms-2">
+                                    <button type="submit" class="btn btn-sm btn-outline-danger" title="Deletar doação" onclick="return confirm('Tem certeza que deseja deletar esta doação?');">
+                                        <i class="bi bi-trash"></i>
+                                    </button>
+                                </form>
                             </div>
                         </li>
                     </ul>

@@ -485,4 +485,106 @@ class BeneficiarioServiceTest {
         assertTrue(encontrado.getDoacoes().isEmpty());
         verify(beneficiarioRepository, times(1)).findById("1");
     }
+
+    // ===== TESTES PARA DELETAR COLETAS =====
+
+    @Test
+    @DisplayName("Deve deletar uma coleta pelo índice")
+    void deletarColetaComSucesso() {
+        List<Coleta> coletas = new ArrayList<>();
+        coletas.add(new Coleta(LocalDateTime.now().minusDays(3)));
+        coletas.add(new Coleta(LocalDateTime.now().minusDays(1)));
+        beneficiario.setColetas(coletas);
+
+        when(beneficiarioRepository.findById("1")).thenReturn(Optional.of(beneficiario));
+        when(beneficiarioRepository.save(any(Beneficiario.class))).thenAnswer(invocation -> invocation.getArgument(0));
+
+        beneficiarioService.deletarColeta("1", 0);
+
+        assertEquals(1, beneficiario.getColetas().size());
+        verify(beneficiarioRepository, times(1)).save(beneficiario);
+    }
+
+    @Test
+    @DisplayName("Deve lançar exceção ao deletar coleta com índice inválido")
+    void deletarColetaIndiceInvalido() {
+        List<Coleta> coletas = new ArrayList<>();
+        coletas.add(new Coleta(LocalDateTime.now()));
+        beneficiario.setColetas(coletas);
+
+        when(beneficiarioRepository.findById("1")).thenReturn(Optional.of(beneficiario));
+
+        RuntimeException exception = assertThrows(RuntimeException.class, () -> {
+            beneficiarioService.deletarColeta("1", 5);
+        });
+
+        assertEquals("Índice de coleta inválido.", exception.getMessage());
+        verify(beneficiarioRepository, never()).save(any());
+    }
+
+    @Test
+    @DisplayName("Deve lançar exceção ao deletar coleta quando não há coletas")
+    void deletarColetaSemColetas() {
+        beneficiario.setColetas(new ArrayList<>());
+
+        when(beneficiarioRepository.findById("1")).thenReturn(Optional.of(beneficiario));
+
+        RuntimeException exception = assertThrows(RuntimeException.class, () -> {
+            beneficiarioService.deletarColeta("1", 0);
+        });
+
+        assertEquals("Nenhuma coleta para deletar.", exception.getMessage());
+        verify(beneficiarioRepository, never()).save(any());
+    }
+
+    // ===== TESTES PARA DELETAR DOAÇÕES =====
+
+    @Test
+    @DisplayName("Deve deletar uma doação pelo índice")
+    void deletarDoacaoComSucesso() {
+        List<Doacoes> doacoes = new ArrayList<>();
+        doacoes.add(new Doacoes(LocalDateTime.now().minusDays(3), "Alimentos"));
+        doacoes.add(new Doacoes(LocalDateTime.now().minusDays(1), "Roupas"));
+        beneficiario.setDoacoes(doacoes);
+
+        when(beneficiarioRepository.findById("1")).thenReturn(Optional.of(beneficiario));
+        when(beneficiarioRepository.save(any(Beneficiario.class))).thenAnswer(invocation -> invocation.getArgument(0));
+
+        beneficiarioService.deletarDoacao("1", 0);
+
+        assertEquals(1, beneficiario.getDoacoes().size());
+        verify(beneficiarioRepository, times(1)).save(beneficiario);
+    }
+
+    @Test
+    @DisplayName("Deve lançar exceção ao deletar doação com índice inválido")
+    void deletarDoacaoIndiceInvalido() {
+        List<Doacoes> doacoes = new ArrayList<>();
+        doacoes.add(new Doacoes(LocalDateTime.now(), "Alimentos"));
+        beneficiario.setDoacoes(doacoes);
+
+        when(beneficiarioRepository.findById("1")).thenReturn(Optional.of(beneficiario));
+
+        RuntimeException exception = assertThrows(RuntimeException.class, () -> {
+            beneficiarioService.deletarDoacao("1", 5);
+        });
+
+        assertEquals("Índice de doação inválido.", exception.getMessage());
+        verify(beneficiarioRepository, never()).save(any());
+    }
+
+    @Test
+    @DisplayName("Deve lançar exceção ao deletar doação quando não há doações")
+    void deletarDoacaoSemDoacoes() {
+        beneficiario.setDoacoes(new ArrayList<>());
+
+        when(beneficiarioRepository.findById("1")).thenReturn(Optional.of(beneficiario));
+
+        RuntimeException exception = assertThrows(RuntimeException.class, () -> {
+            beneficiarioService.deletarDoacao("1", 0);
+        });
+
+        assertEquals("Nenhuma doação para deletar.", exception.getMessage());
+        verify(beneficiarioRepository, never()).save(any());
+    }
 }

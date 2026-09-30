@@ -127,4 +127,32 @@ public class ViewController {
         }
         return "redirect:/perfil/" + id;
     }
+
+    @PostMapping("/beneficiario/{id}/coleta/{indice}/deletar")
+    public String deletarColeta(@PathVariable String id, @PathVariable int indice, RedirectAttributes redirectAttributes) {
+        try {
+            log.debug("Tentando deletar coleta no índice {} para beneficiário: {}", indice, id);
+            beneficiarioService.deletarColeta(id, indice);
+            log.debug("Coleta deletada com sucesso!");
+            redirectAttributes.addFlashAttribute("sucesso", "Coleta deletada com sucesso!");
+        } catch (Exception e) {
+            log.error("Erro ao deletar coleta: {}", e.getMessage(), e);
+            redirectAttributes.addFlashAttribute("erro", "Erro ao deletar coleta: " + e.getMessage());
+        }
+        return "redirect:/perfil/" + id;
+    }
+
+    @PostMapping("/beneficiario/{id}/doacao/{indice}/deletar")
+    public String deletarDoacao(@PathVariable String id, @PathVariable int indice, RedirectAttributes redirectAttributes) {
+        try {
+            log.debug("Tentando deletar doação no índice {} para beneficiário: {}", indice, id);
+            beneficiarioService.deletarDoacao(id, indice);
+            log.debug("Doação deletada com sucesso!");
+            redirectAttributes.addFlashAttribute("sucesso", "Doação deletada com sucesso!");
+        } catch (Exception e) {
+            log.error("Erro ao deletar doação: {}", e.getMessage(), e);
+            redirectAttributes.addFlashAttribute("erro", "Erro ao deletar doação: " + e.getMessage());
+        }
+        return "redirect:/perfil/" + id;
+    }
 }

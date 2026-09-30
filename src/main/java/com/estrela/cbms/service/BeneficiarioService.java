@@ -97,6 +97,42 @@ public class BeneficiarioService {
         return beneficiarioRepository.save(beneficiario);
     }
 
+    public void deletarColeta(String beneficiarioId, int indice) {
+        Beneficiario beneficiario = beneficiarioRepository.findById(beneficiarioId)
+                .orElseThrow(() -> new RuntimeException("Beneficiário não encontrado."));
+
+        if (beneficiario.getColetas() == null || beneficiario.getColetas().isEmpty()) {
+            throw new RuntimeException("Nenhuma coleta para deletar.");
+        }
+
+        beneficiario.getColetas().sort((c1, c2) -> c2.getDataColeta().compareTo(c1.getDataColeta()));
+
+        if (indice < 0 || indice >= beneficiario.getColetas().size()) {
+            throw new RuntimeException("Índice de coleta inválido.");
+        }
+
+        beneficiario.getColetas().remove(indice);
+        beneficiarioRepository.save(beneficiario);
+    }
+
+    public void deletarDoacao(String beneficiarioId, int indice) {
+        Beneficiario beneficiario = beneficiarioRepository.findById(beneficiarioId)
+                .orElseThrow(() -> new RuntimeException("Beneficiário não encontrado."));
+
+        if (beneficiario.getDoacoes() == null || beneficiario.getDoacoes().isEmpty()) {
+            throw new RuntimeException("Nenhuma doação para deletar.");
+        }
+
+        beneficiario.getDoacoes().sort((d1, d2) -> d2.getDataDoacao().compareTo(d1.getDataDoacao()));
+
+        if (indice < 0 || indice >= beneficiario.getDoacoes().size()) {
+            throw new RuntimeException("Índice de doação inválido.");
+        }
+
+        beneficiario.getDoacoes().remove(indice);
+        beneficiarioRepository.save(beneficiario);
+    }
+
     public List<Beneficiario> listarTodos() {
         List<Beneficiario> beneficiarios = beneficiarioRepository.findAll();
 
