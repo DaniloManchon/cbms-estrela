@@ -291,6 +291,5 @@ Nenhum atualmente - relatar qualquer problema encontrado!
 
 ---
 
-**Última atualização:** 2026-09-30  
 **Desenvolvedor principal:** Danilo Manchon  
-**Email para dúvidas:** danilomanchon@gmail.com
+
