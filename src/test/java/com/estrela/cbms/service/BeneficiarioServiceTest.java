@@ -46,7 +46,7 @@ class BeneficiarioServiceTest {
     @Test
     @DisplayName("Deve criar novo beneficiário com sucesso")
     void criarBeneficiarioComSucesso() {
-        beneficiario.setId(null);
+        beneficiario.setId("");
         when(beneficiarioRepository.findByCpf(anyString())).thenReturn(Optional.empty());
         when(beneficiarioRepository.save(any(Beneficiario.class))).thenReturn(beneficiario);
 
