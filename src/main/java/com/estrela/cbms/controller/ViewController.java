@@ -155,4 +155,19 @@ public class ViewController {
         }
         return "redirect:/perfil/" + id;
     }
+
+    @PostMapping("/beneficiario/{id}/deletar")
+    public String deletarBeneficiario(@PathVariable String id, RedirectAttributes redirectAttributes) {
+        try {
+            log.debug("Tentando deletar beneficiário: {}", id);
+            beneficiarioService.deletarBeneficiario(id);
+            log.debug("Beneficiário deletado com sucesso!");
+            redirectAttributes.addFlashAttribute("sucesso", "Beneficiário deletado com sucesso!");
+        } catch (Exception e) {
+            log.error("Erro ao deletar beneficiário: {}", e.getMessage(), e);
+            redirectAttributes.addFlashAttribute("erro", "Erro ao deletar beneficiário: " + e.getMessage());
+            return "redirect:/editar/" + id;
+        }
+        return "redirect:/";
+    }
 }
