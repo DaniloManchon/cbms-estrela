@@ -13,7 +13,7 @@ import java.time.LocalDateTime;
 import java.util.Collections;
 
 import static org.mockito.ArgumentMatchers.*;
-import static org.mockito.Mockito.when;
+import static org.mockito.Mockito.*;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
@@ -107,6 +107,46 @@ class ViewControllerTest {
         mockMvc.perform(post("/beneficiario/1/doacao")
                 .param("dataDoacao", "2025-03-15T10:30")
                 .param("descricaoDoacao", "Alimentos básicos"))
+                .andExpect(status().is3xxRedirection())
+                .andExpect(redirectedUrl("/perfil/1"))
+                .andExpect(flash().attributeExists("erro"));
+    }
+
+    @Test
+    @DisplayName("Deve deletar uma coleta com sucesso")
+    void deletarColetaComSucesso() throws Exception {
+        mockMvc.perform(post("/beneficiario/1/coleta/0/deletar"))
+                .andExpect(status().is3xxRedirection())
+                .andExpect(redirectedUrl("/perfil/1"))
+                .andExpect(flash().attributeExists("sucesso"));
+    }
+
+    @Test
+    @DisplayName("Deve tratar erro ao deletar coleta")
+    void deletarColetaComErro() throws Exception {
+        doThrow(new RuntimeException("Índice inválido")).when(beneficiarioService).deletarColeta("1", 0);
+
+        mockMvc.perform(post("/beneficiario/1/coleta/0/deletar"))
+                .andExpect(status().is3xxRedirection())
+                .andExpect(redirectedUrl("/perfil/1"))
+                .andExpect(flash().attributeExists("erro"));
+    }
+
+    @Test
+    @DisplayName("Deve deletar uma doação com sucesso")
+    void deletarDoacaoComSucesso() throws Exception {
+        mockMvc.perform(post("/beneficiario/1/doacao/0/deletar"))
+                .andExpect(status().is3xxRedirection())
+                .andExpect(redirectedUrl("/perfil/1"))
+                .andExpect(flash().attributeExists("sucesso"));
+    }
+
+    @Test
+    @DisplayName("Deve tratar erro ao deletar doação")
+    void deletarDoacaoComErro() throws Exception {
+        doThrow(new RuntimeException("Índice inválido")).when(beneficiarioService).deletarDoacao("1", 0);
+
+        mockMvc.perform(post("/beneficiario/1/doacao/0/deletar"))
                 .andExpect(status().is3xxRedirection())
                 .andExpect(redirectedUrl("/perfil/1"))
                 .andExpect(flash().attributeExists("erro"));

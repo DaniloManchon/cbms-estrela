@@ -62,7 +62,7 @@ public class BeneficiarioService {
     }
 
     public Beneficiario salvar(Beneficiario beneficiario) {
-        if (beneficiario.getId() == null) {
+        if (beneficiario.getId() == null || beneficiario.getId().isBlank()) {
             return criarBeneficiario(beneficiario);
         } else {
             return atualizarBeneficiario(beneficiario);
@@ -97,18 +97,54 @@ public class BeneficiarioService {
         return beneficiarioRepository.save(beneficiario);
     }
 
+    public void deletarColeta(String beneficiarioId, int indice) {
+        Beneficiario beneficiario = beneficiarioRepository.findById(beneficiarioId)
+                .orElseThrow(() -> new RuntimeException("Beneficiário não encontrado."));
+
+        if (beneficiario.getColetas() == null || beneficiario.getColetas().isEmpty()) {
+            throw new RuntimeException("Nenhuma coleta para deletar.");
+        }
+
+        ordenarColetasEDoacoes(beneficiario);
+
+        if (indice < 0 || indice >= beneficiario.getColetas().size()) {
+            throw new RuntimeException("Índice de coleta inválido.");
+        }
+
+        beneficiario.getColetas().remove(indice);
+        beneficiarioRepository.save(beneficiario);
+    }
+
+    public void deletarDoacao(String beneficiarioId, int indice) {
+        Beneficiario beneficiario = beneficiarioRepository.findById(beneficiarioId)
+                .orElseThrow(() -> new RuntimeException("Beneficiário não encontrado."));
+
+        if (beneficiario.getDoacoes() == null || beneficiario.getDoacoes().isEmpty()) {
+            throw new RuntimeException("Nenhuma doação para deletar.");
+        }
+
+        ordenarColetasEDoacoes(beneficiario);
+
+        if (indice < 0 || indice >= beneficiario.getDoacoes().size()) {
+            throw new RuntimeException("Índice de doação inválido.");
+        }
+
+        beneficiario.getDoacoes().remove(indice);
+        beneficiarioRepository.save(beneficiario);
+    }
+
+    private void ordenarColetasEDoacoes(Beneficiario beneficiario) {
+        if (beneficiario.getColetas() != null) {
+            beneficiario.getColetas().sort((c1, c2) -> c2.getDataColeta().compareTo(c1.getDataColeta()));
+        }
+        if (beneficiario.getDoacoes() != null) {
+            beneficiario.getDoacoes().sort((d1, d2) -> d2.getDataDoacao().compareTo(d1.getDataDoacao()));
+        }
+    }
+
     public List<Beneficiario> listarTodos() {
         List<Beneficiario> beneficiarios = beneficiarioRepository.findAll();
-
-        beneficiarios.forEach(b -> {
-            if (b.getColetas() != null) {
-                b.getColetas().sort((c1, c2) -> c2.getDataColeta().compareTo(c1.getDataColeta()));
-            }
-            if (b.getDoacoes() != null) {
-                b.getDoacoes().sort((d1, d2) -> d2.getDataDoacao().compareTo(d1.getDataDoacao()));
-            }
-        });
-
+        beneficiarios.forEach(this::ordenarColetasEDoacoes);
         return beneficiarios;
     }
 
@@ -125,16 +161,7 @@ public class BeneficiarioService {
         }
 
         List<Beneficiario> beneficiarios = beneficiarioRepository.findByNomeCompletoContainingIgnoreCaseOrCpfContainingOrCodigoBarrasContaining(termo, termo, termo);
-
-        beneficiarios.forEach(b -> {
-            if (b.getColetas() != null) {
-                b.getColetas().sort((c1, c2) -> c2.getDataColeta().compareTo(c1.getDataColeta()));
-            }
-            if (b.getDoacoes() != null) {
-                b.getDoacoes().sort((d1, d2) -> d2.getDataDoacao().compareTo(d1.getDataDoacao()));
-            }
-        });
-
+        beneficiarios.forEach(this::ordenarColetasEDoacoes);
         return beneficiarios;
     }
 
@@ -143,16 +170,16 @@ public class BeneficiarioService {
                 .orElseThrow(() -> new RuntimeException("Beneficiário não encontrado."));
 
         inicializarObjetosAninhados(beneficiario);
-
-        if (beneficiario.getColetas() != null) {
-            beneficiario.getColetas().sort((c1, c2) -> c2.getDataColeta().compareTo(c1.getDataColeta()));
-        }
-
-        if (beneficiario.getDoacoes() != null) {
-            beneficiario.getDoacoes().sort((d1, d2) -> d2.getDataDoacao().compareTo(d1.getDataDoacao()));
-        }
+        ordenarColetasEDoacoes(beneficiario);
 
         return beneficiario;
+    }
+
+    public void deletarBeneficiario(String id) {
+        Beneficiario beneficiario = beneficiarioRepository.findById(id)
+                .orElseThrow(() -> new RuntimeException("Beneficiário não encontrado."));
+
+        beneficiarioRepository.deleteById(id);
     }
 
     public void inicializarObjetosAninhados(Beneficiario beneficiario) {
