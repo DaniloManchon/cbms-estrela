@@ -62,7 +62,7 @@ public class BeneficiarioService {
     }
 
     public Beneficiario salvar(Beneficiario beneficiario) {
-        if (beneficiario.getId() == null) {
+        if (beneficiario.getId() == null || beneficiario.getId().isBlank()) {
             return criarBeneficiario(beneficiario);
         } else {
             return atualizarBeneficiario(beneficiario);
@@ -173,6 +173,13 @@ public class BeneficiarioService {
         ordenarColetasEDoacoes(beneficiario);
 
         return beneficiario;
+    }
+
+    public void deletarBeneficiario(String id) {
+        Beneficiario beneficiario = beneficiarioRepository.findById(id)
+                .orElseThrow(() -> new RuntimeException("Beneficiário não encontrado."));
+
+        beneficiarioRepository.deleteById(id);
     }
 
     public void inicializarObjetosAninhados(Beneficiario beneficiario) {

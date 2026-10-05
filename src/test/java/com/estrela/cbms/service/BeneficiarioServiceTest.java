@@ -220,6 +220,20 @@ class BeneficiarioServiceTest {
     }
 
     @Test
+    @DisplayName("Deve rotear para criarBeneficiario quando ID é string vazia (vem de formulário HTML)")
+    void salvarRotaParaCriarQuandoIdVazio() {
+        beneficiario.setId("");
+        when(beneficiarioRepository.findByCpf(anyString())).thenReturn(Optional.empty());
+        when(beneficiarioRepository.save(any(Beneficiario.class))).thenReturn(beneficiario);
+
+        Beneficiario salvo = beneficiarioService.salvar(beneficiario);
+
+        assertNotNull(salvo);
+        assertTrue(salvo.getCodigoBarras().startsWith("EST"));
+        verify(beneficiarioRepository, times(1)).save(beneficiario);
+    }
+
+    @Test
     @DisplayName("Deve rotear para atualizarBeneficiario quando ID não é nulo")
     void salvarRotaParaAtualizarQuandoIdPresente() {
         List<Coleta> coletas = new ArrayList<>();
