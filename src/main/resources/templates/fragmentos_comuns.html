@@ -29,7 +29,7 @@
 </div>
 
 <form th:fragment="botaoDeletar(url, titulo, confirmacao)" th:action="@{${url}}" method="post" class="d-inline ms-2">
-    <button type="submit" class="btn btn-sm btn-outline-danger" th:title="${titulo}" th:onclick="|return confirm('${confirmacao}');|">
+    <button type="submit" class="btn btn-sm btn-outline-danger" th:title="${titulo}" th:attr="data-confirmacao=${confirmacao}" onclick="return confirm(this.dataset.confirmacao);">
         <i class="bi bi-trash"></i>
     </button>
 </form>
