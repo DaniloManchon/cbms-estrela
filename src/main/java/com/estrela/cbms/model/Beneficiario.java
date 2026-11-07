@@ -60,4 +60,6 @@ public class Beneficiario {
     private String motivoInativacao;
 
     private List<Doacoes> doacoes;
+
+    private List<VisitaDomiciliar> visitasDomiciliares;
 }

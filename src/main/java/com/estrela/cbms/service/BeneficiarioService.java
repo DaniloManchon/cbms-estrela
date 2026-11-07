@@ -52,6 +52,9 @@ public class BeneficiarioService {
         if (existente.getDoacoes() != null && !existente.getDoacoes().isEmpty()) {
             beneficiario.setDoacoes(existente.getDoacoes());
         }
+        if (existente.getVisitasDomiciliares() != null && !existente.getVisitasDomiciliares().isEmpty()) {
+            beneficiario.setVisitasDomiciliares(existente.getVisitasDomiciliares());
+        }
 
         // Se reativar o beneficiário, limpa o motivo de inativação
         if (Boolean.TRUE.equals(beneficiario.getAtivo()) && beneficiario.getMotivoInativacao() != null) {
@@ -97,6 +100,16 @@ public class BeneficiarioService {
         return beneficiarioRepository.save(beneficiario);
     }
 
+    public Beneficiario registrarVisitaDomiciliar(Beneficiario beneficiario, LocalDateTime dataVisita, String nomeVisitante) {
+        // Inicializa a lista de visitas domiciliares se for nula
+        if (beneficiario.getVisitasDomiciliares() == null) {
+            beneficiario.setVisitasDomiciliares(new ArrayList<>());
+        }
+
+        beneficiario.getVisitasDomiciliares().add(new VisitaDomiciliar(dataVisita, nomeVisitante));
+        return beneficiarioRepository.save(beneficiario);
+    }
+
     public void deletarColeta(String beneficiarioId, int indice) {
         Beneficiario beneficiario = beneficiarioRepository.findById(beneficiarioId)
                 .orElseThrow(() -> new RuntimeException("Beneficiário não encontrado."));
@@ -133,12 +146,33 @@ public class BeneficiarioService {
         beneficiarioRepository.save(beneficiario);
     }
 
+    public void deletarVisitaDomiciliar(String beneficiarioId, int indice) {
+        Beneficiario beneficiario = beneficiarioRepository.findById(beneficiarioId)
+                .orElseThrow(() -> new RuntimeException("Beneficiário não encontrado."));
+
+        if (beneficiario.getVisitasDomiciliares() == null || beneficiario.getVisitasDomiciliares().isEmpty()) {
+            throw new RuntimeException("Nenhuma visita domiciliar para deletar.");
+        }
+
+        ordenarColetasEDoacoes(beneficiario);
+
+        if (indice < 0 || indice >= beneficiario.getVisitasDomiciliares().size()) {
+            throw new RuntimeException("Índice de visita domiciliar inválido.");
+        }
+
+        beneficiario.getVisitasDomiciliares().remove(indice);
+        beneficiarioRepository.save(beneficiario);
+    }
+
     private void ordenarColetasEDoacoes(Beneficiario beneficiario) {
         if (beneficiario.getColetas() != null) {
             beneficiario.getColetas().sort((c1, c2) -> c2.getDataColeta().compareTo(c1.getDataColeta()));
         }
         if (beneficiario.getDoacoes() != null) {
             beneficiario.getDoacoes().sort((d1, d2) -> d2.getDataDoacao().compareTo(d1.getDataDoacao()));
+        }
+        if (beneficiario.getVisitasDomiciliares() != null) {
+            beneficiario.getVisitasDomiciliares().sort((v1, v2) -> v2.getDataVisita().compareTo(v1.getDataVisita()));
         }
     }
 
@@ -218,6 +252,10 @@ public class BeneficiarioService {
 
         if (beneficiario.getDoacoes() == null) {
             beneficiario.setDoacoes(new ArrayList<>());
+        }
+
+        if (beneficiario.getVisitasDomiciliares() == null) {
+            beneficiario.setVisitasDomiciliares(new ArrayList<>());
         }
     }
 }
