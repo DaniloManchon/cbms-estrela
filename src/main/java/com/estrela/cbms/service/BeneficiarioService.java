@@ -92,7 +92,7 @@ public class BeneficiarioService {
         }
 
         beneficiario.getColetas().add(new Coleta(LocalDateTime.now()));
-        ordenarColetasEDoacoes(beneficiario);
+        numerarEOrdenarHistoricos(beneficiario);
         return beneficiarioRepository.save(beneficiario);
     }
 
@@ -102,8 +102,8 @@ public class BeneficiarioService {
             beneficiario.setDoacoes(new ArrayList<>());
         }
 
-        beneficiario.getDoacoes().add(new Doacoes(dataDoacao, descricaoDoacao));
-        ordenarColetasEDoacoes(beneficiario);
+        beneficiario.getDoacoes().add(new Doacao(dataDoacao, descricaoDoacao));
+        numerarEOrdenarHistoricos(beneficiario);
         return beneficiarioRepository.save(beneficiario);
     }
 
@@ -114,7 +114,7 @@ public class BeneficiarioService {
         }
 
         beneficiario.getVisitasDomiciliares().add(new VisitaDomiciliar(dataVisita, nomeVisitante));
-        ordenarColetasEDoacoes(beneficiario);
+        numerarEOrdenarHistoricos(beneficiario);
         return beneficiarioRepository.save(beneficiario);
     }
 
@@ -126,14 +126,14 @@ public class BeneficiarioService {
             throw new RuntimeException("Nenhuma coleta para deletar.");
         }
 
-        ordenarColetasEDoacoes(beneficiario);
+        numerarEOrdenarHistoricos(beneficiario);
 
         if (indice < 0 || indice >= beneficiario.getColetas().size()) {
             throw new RuntimeException("Índice de coleta inválido.");
         }
 
         beneficiario.getColetas().remove(indice);
-        ordenarColetasEDoacoes(beneficiario);
+        numerarEOrdenarHistoricos(beneficiario);
         beneficiarioRepository.save(beneficiario);
     }
 
@@ -145,14 +145,14 @@ public class BeneficiarioService {
             throw new RuntimeException("Nenhuma doação para deletar.");
         }
 
-        ordenarColetasEDoacoes(beneficiario);
+        numerarEOrdenarHistoricos(beneficiario);
 
         if (indice < 0 || indice >= beneficiario.getDoacoes().size()) {
             throw new RuntimeException("Índice de doação inválido.");
         }
 
         beneficiario.getDoacoes().remove(indice);
-        ordenarColetasEDoacoes(beneficiario);
+        numerarEOrdenarHistoricos(beneficiario);
         beneficiarioRepository.save(beneficiario);
     }
 
@@ -164,19 +164,19 @@ public class BeneficiarioService {
             throw new RuntimeException("Nenhuma visita domiciliar para deletar.");
         }
 
-        ordenarColetasEDoacoes(beneficiario);
+        numerarEOrdenarHistoricos(beneficiario);
 
         if (indice < 0 || indice >= beneficiario.getVisitasDomiciliares().size()) {
             throw new RuntimeException("Índice de visita domiciliar inválido.");
         }
 
         beneficiario.getVisitasDomiciliares().remove(indice);
-        ordenarColetasEDoacoes(beneficiario);
+        numerarEOrdenarHistoricos(beneficiario);
         beneficiarioRepository.save(beneficiario);
     }
 
     // Numera os registros pela ordem cronológica (id 1 = mais antigo) e exibe do mais recente para o mais antigo
-    private void ordenarColetasEDoacoes(Beneficiario beneficiario) {
+    private void numerarEOrdenarHistoricos(Beneficiario beneficiario) {
         if (beneficiario.getColetas() != null) {
             numerarPorOrdemCronologica(beneficiario.getColetas(),
                     Comparator.comparing(Coleta::getDataColeta).thenComparing(Coleta::getId, ID_NULOS_POR_ULTIMO),
@@ -185,9 +185,9 @@ public class BeneficiarioService {
         }
         if (beneficiario.getDoacoes() != null) {
             numerarPorOrdemCronologica(beneficiario.getDoacoes(),
-                    Comparator.comparing(Doacoes::getDataDoacao).thenComparing(Doacoes::getId, ID_NULOS_POR_ULTIMO),
-                    Doacoes::setId);
-            beneficiario.getDoacoes().sort(Comparator.comparing(Doacoes::getId, Comparator.reverseOrder()));
+                    Comparator.comparing(Doacao::getDataDoacao).thenComparing(Doacao::getId, ID_NULOS_POR_ULTIMO),
+                    Doacao::setId);
+            beneficiario.getDoacoes().sort(Comparator.comparing(Doacao::getId, Comparator.reverseOrder()));
         }
         if (beneficiario.getVisitasDomiciliares() != null) {
             numerarPorOrdemCronologica(beneficiario.getVisitasDomiciliares(),
@@ -207,7 +207,7 @@ public class BeneficiarioService {
 
     public List<Beneficiario> listarTodos() {
         List<Beneficiario> beneficiarios = beneficiarioRepository.findAll();
-        beneficiarios.forEach(this::ordenarColetasEDoacoes);
+        beneficiarios.forEach(this::numerarEOrdenarHistoricos);
         return beneficiarios;
     }
 
@@ -224,7 +224,7 @@ public class BeneficiarioService {
         }
 
         List<Beneficiario> beneficiarios = beneficiarioRepository.findByNomeCompletoContainingIgnoreCaseOrCpfContainingOrCodigoBarrasContaining(termo, termo, termo);
-        beneficiarios.forEach(this::ordenarColetasEDoacoes);
+        beneficiarios.forEach(this::numerarEOrdenarHistoricos);
         return beneficiarios;
     }
 
@@ -233,7 +233,7 @@ public class BeneficiarioService {
                 .orElseThrow(() -> new RuntimeException("Beneficiário não encontrado."));
 
         inicializarObjetosAninhados(beneficiario);
-        ordenarColetasEDoacoes(beneficiario);
+        numerarEOrdenarHistoricos(beneficiario);
 
         return beneficiario;
     }

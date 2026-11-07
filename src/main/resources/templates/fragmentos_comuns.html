@@ -27,4 +27,10 @@
 <div th:fragment="masks">
     <script th:src="@{/js/masks.js}"></script>
 </div>
+
+<form th:fragment="botaoDeletar(url, titulo, confirmacao)" th:action="@{${url}}" method="post" class="d-inline ms-2">
+    <button type="submit" class="btn btn-sm btn-outline-danger" th:title="${titulo}" th:onclick="|return confirm('${confirmacao}');|">
+        <i class="bi bi-trash"></i>
+    </button>
+</form>
 </html>

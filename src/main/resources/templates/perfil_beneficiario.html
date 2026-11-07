@@ -117,11 +117,7 @@
                                 <i class="bi bi-calendar-check text-success"></i>
                                 <span th:text="${#temporals.format(coleta.dataColeta, 'dd/MM/yyyy ''às'' HH:mm')}"></span>
                             </div>
-                            <form th:action="@{'/beneficiario/' + ${beneficiario.id} + '/coleta/' + ${stat.index} + '/deletar'}" method="post" class="d-inline">
-                                <button type="submit" class="btn btn-sm btn-outline-danger" title="Deletar coleta" onclick="return confirm('Tem certeza que deseja deletar esta coleta?');">
-                                    <i class="bi bi-trash"></i>
-                                </button>
-                            </form>
+                            <form th:replace="~{fragmentos_comuns :: botaoDeletar(${'/beneficiario/' + beneficiario.id + '/coleta/' + stat.index + '/deletar'}, 'Deletar coleta', 'Tem certeza que deseja deletar esta coleta?')}"></form>
                         </li>
                     </ul>
                 </div>
@@ -143,11 +139,7 @@
                                     </p>
                                     <p class="mb-0 small text-muted" th:text="${doacao.descricaoDoacao}"></p>
                                 </div>
-                                <form th:action="@{'/beneficiario/' + ${beneficiario.id} + '/doacao/' + ${stat.index} + '/deletar'}" method="post" class="d-inline ms-2">
-                                    <button type="submit" class="btn btn-sm btn-outline-danger" title="Deletar doação" onclick="return confirm('Tem certeza que deseja deletar esta doação?');">
-                                        <i class="bi bi-trash"></i>
-                                    </button>
-                                </form>
+                                <form th:replace="~{fragmentos_comuns :: botaoDeletar(${'/beneficiario/' + beneficiario.id + '/doacao/' + stat.index + '/deletar'}, 'Deletar doação', 'Tem certeza que deseja deletar esta doação?')}"></form>
                             </div>
                         </li>
                     </ul>
@@ -200,11 +192,7 @@
                                         <span th:text="${visita.nomeVisitante}"></span>
                                     </p>
                                 </div>
-                                <form th:action="@{'/beneficiario/' + ${beneficiario.id} + '/visita/' + ${stat.index} + '/deletar'}" method="post" class="d-inline ms-2">
-                                    <button type="submit" class="btn btn-sm btn-outline-danger" title="Deletar visita" onclick="return confirm('Tem certeza que deseja deletar esta visita domiciliar?');">
-                                        <i class="bi bi-trash"></i>
-                                    </button>
-                                </form>
+                                <form th:replace="~{fragmentos_comuns :: botaoDeletar(${'/beneficiario/' + beneficiario.id + '/visita/' + stat.index + '/deletar'}, 'Deletar visita', 'Tem certeza que deseja deletar esta visita domiciliar?')}"></form>
                             </div>
                         </li>
                     </ul>

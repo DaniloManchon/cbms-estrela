@@ -11,13 +11,13 @@ import java.time.LocalDate;
 @Setter
 @NoArgsConstructor
 @AllArgsConstructor
-public class Doacoes {
+public class Doacao {
 
     private Long id;
     private LocalDate dataDoacao;
     private String descricaoDoacao;
 
-    public Doacoes(LocalDate dataDoacao, String descricaoDoacao) {
+    public Doacao(LocalDate dataDoacao, String descricaoDoacao) {
         this.dataDoacao = dataDoacao;
         this.descricaoDoacao = descricaoDoacao;
     }

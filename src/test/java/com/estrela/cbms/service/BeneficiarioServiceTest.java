@@ -2,7 +2,7 @@ package com.estrela.cbms.service;
 
 import com.estrela.cbms.model.Coleta;
 import com.estrela.cbms.model.Beneficiario;
-import com.estrela.cbms.model.Doacoes;
+import com.estrela.cbms.model.Doacao;
 import com.estrela.cbms.model.VisitaDomiciliar;
 import com.estrela.cbms.repository.BeneficiarioRepository;
 import org.junit.jupiter.api.BeforeEach;
@@ -412,9 +412,9 @@ class BeneficiarioServiceTest {
     @Test
     @DisplayName("Deve preservar doações ao atualizar beneficiário")
     void atualizarBeneficiarioPreservandoDoacoes() {
-        List<Doacoes> doacoesExistentes = new ArrayList<>();
-        doacoesExistentes.add(new Doacoes(LocalDate.now().minusDays(5), "Alimentos"));
-        doacoesExistentes.add(new Doacoes(LocalDate.now().minusDays(1), "Roupas"));
+        List<Doacao> doacoesExistentes = new ArrayList<>();
+        doacoesExistentes.add(new Doacao(LocalDate.now().minusDays(5), "Alimentos"));
+        doacoesExistentes.add(new Doacao(LocalDate.now().minusDays(1), "Roupas"));
 
         Beneficiario beneficiarioExistente = new Beneficiario();
         beneficiarioExistente.setId("1");
@@ -445,10 +445,10 @@ class BeneficiarioServiceTest {
         Beneficiario ben1 = new Beneficiario();
         ben1.setId("1");
         ben1.setNomeCompleto("João");
-        List<Doacoes> doacoes1 = new ArrayList<>();
-        doacoes1.add(new Doacoes(LocalDate.now().minusDays(5), "Alimentos"));
-        doacoes1.add(new Doacoes(LocalDate.now().minusDays(1), "Roupas"));
-        doacoes1.add(new Doacoes(LocalDate.now().minusDays(10), "Eletrônicos"));
+        List<Doacao> doacoes1 = new ArrayList<>();
+        doacoes1.add(new Doacao(LocalDate.now().minusDays(5), "Alimentos"));
+        doacoes1.add(new Doacao(LocalDate.now().minusDays(1), "Roupas"));
+        doacoes1.add(new Doacao(LocalDate.now().minusDays(10), "Eletrônicos"));
         ben1.setDoacoes(doacoes1);
 
         when(beneficiarioRepository.findAll()).thenReturn(List.of(ben1));
@@ -471,9 +471,9 @@ class BeneficiarioServiceTest {
         Beneficiario ben1 = new Beneficiario();
         ben1.setId("1");
         ben1.setNomeCompleto("João");
-        List<Doacoes> doacoes1 = new ArrayList<>();
-        doacoes1.add(new Doacoes(LocalDate.now().minusDays(3), "Alimentos"));
-        doacoes1.add(new Doacoes(LocalDate.now().minusDays(1), "Roupas"));
+        List<Doacao> doacoes1 = new ArrayList<>();
+        doacoes1.add(new Doacao(LocalDate.now().minusDays(3), "Alimentos"));
+        doacoes1.add(new Doacao(LocalDate.now().minusDays(1), "Roupas"));
         ben1.setDoacoes(doacoes1);
 
         when(beneficiarioRepository.findByNomeCompletoContainingIgnoreCaseOrCpfContainingOrCodigoBarrasContaining("João","João","João"))
@@ -558,9 +558,9 @@ class BeneficiarioServiceTest {
     @Test
     @DisplayName("Deve deletar uma doação pelo índice")
     void deletarDoacaoComSucesso() {
-        List<Doacoes> doacoes = new ArrayList<>();
-        doacoes.add(new Doacoes(LocalDate.now().minusDays(3), "Alimentos"));
-        doacoes.add(new Doacoes(LocalDate.now().minusDays(1), "Roupas"));
+        List<Doacao> doacoes = new ArrayList<>();
+        doacoes.add(new Doacao(LocalDate.now().minusDays(3), "Alimentos"));
+        doacoes.add(new Doacao(LocalDate.now().minusDays(1), "Roupas"));
         beneficiario.setDoacoes(doacoes);
 
         when(beneficiarioRepository.findById("1")).thenReturn(Optional.of(beneficiario));
@@ -575,8 +575,8 @@ class BeneficiarioServiceTest {
     @Test
     @DisplayName("Deve lançar exceção ao deletar doação com índice inválido")
     void deletarDoacaoIndiceInvalido() {
-        List<Doacoes> doacoes = new ArrayList<>();
-        doacoes.add(new Doacoes(LocalDate.now(), "Alimentos"));
+        List<Doacao> doacoes = new ArrayList<>();
+        doacoes.add(new Doacao(LocalDate.now(), "Alimentos"));
         beneficiario.setDoacoes(doacoes);
 
         when(beneficiarioRepository.findById("1")).thenReturn(Optional.of(beneficiario));
@@ -746,9 +746,9 @@ class BeneficiarioServiceTest {
     @Test
     @DisplayName("Deve gerar id maior que o último existente ao registrar doação")
     void registrarDoacaoGeraIdCrescente() {
-        Doacoes primeira = new Doacoes(LocalDate.now().minusDays(2), "Alimentos");
+        Doacao primeira = new Doacao(LocalDate.now().minusDays(2), "Alimentos");
         primeira.setId(1L);
-        Doacoes segunda = new Doacoes(LocalDate.now().minusDays(1), "Roupas");
+        Doacao segunda = new Doacao(LocalDate.now().minusDays(1), "Roupas");
         segunda.setId(2L);
         beneficiario.setDoacoes(new ArrayList<>(List.of(primeira, segunda)));
         when(beneficiarioRepository.save(any(Beneficiario.class))).thenAnswer(invocation -> invocation.getArgument(0));
@@ -780,15 +780,15 @@ class BeneficiarioServiceTest {
     @DisplayName("Deve atribuir ids aos registros antigos em ordem cronológica")
     void atribuirIdsAosRegistrosAntigos() {
         beneficiario.setDoacoes(new ArrayList<>(List.of(
-                new Doacoes(LocalDate.now().minusDays(1), "Roupas"),
-                new Doacoes(LocalDate.now().minusDays(5), "Alimentos"),
-                new Doacoes(LocalDate.now().minusDays(3), "Eletrônicos"))));
+                new Doacao(LocalDate.now().minusDays(1), "Roupas"),
+                new Doacao(LocalDate.now().minusDays(5), "Alimentos"),
+                new Doacao(LocalDate.now().minusDays(3), "Eletrônicos"))));
 
         when(beneficiarioRepository.findById("1")).thenReturn(Optional.of(beneficiario));
 
         Beneficiario encontrado = beneficiarioService.buscarPorId("1");
 
-        List<Doacoes> doacoes = encontrado.getDoacoes();
+        List<Doacao> doacoes = encontrado.getDoacoes();
         assertEquals("Roupas", doacoes.get(0).getDescricaoDoacao());
         assertEquals(3L, doacoes.get(0).getId());
         assertEquals("Eletrônicos", doacoes.get(1).getDescricaoDoacao());
