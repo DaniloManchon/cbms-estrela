@@ -9,6 +9,7 @@ import org.springframework.boot.webmvc.test.autoconfigure.WebMvcTest;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.MockMvc;
 
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.Collections;
 
@@ -88,11 +89,11 @@ class ViewControllerTest {
         Beneficiario beneficiario = criarBeneficiarioMock();
 
         when(beneficiarioService.buscarPorId("1")).thenReturn(beneficiario);
-        when(beneficiarioService.registrarDoacao(any(), any(LocalDateTime.class), anyString()))
+        when(beneficiarioService.registrarDoacao(any(), any(LocalDate.class), anyString()))
                 .thenReturn(beneficiario);
 
         mockMvc.perform(post("/beneficiario/1/doacao")
-                .param("dataDoacao", "2025-03-15T10:30")
+                .param("dataDoacao", "2025-03-15")
                 .param("descricaoDoacao", "Alimentos básicos"))
                 .andExpect(status().is3xxRedirection())
                 .andExpect(redirectedUrl("/perfil/1"))
@@ -105,7 +106,7 @@ class ViewControllerTest {
         when(beneficiarioService.buscarPorId("1")).thenThrow(new RuntimeException("Beneficiário não encontrado"));
 
         mockMvc.perform(post("/beneficiario/1/doacao")
-                .param("dataDoacao", "2025-03-15T10:30")
+                .param("dataDoacao", "2025-03-15")
                 .param("descricaoDoacao", "Alimentos básicos"))
                 .andExpect(status().is3xxRedirection())
                 .andExpect(redirectedUrl("/perfil/1"))
@@ -158,11 +159,11 @@ class ViewControllerTest {
         Beneficiario beneficiario = criarBeneficiarioMock();
 
         when(beneficiarioService.buscarPorId("1")).thenReturn(beneficiario);
-        when(beneficiarioService.registrarVisitaDomiciliar(any(), any(LocalDateTime.class), anyString()))
+        when(beneficiarioService.registrarVisitaDomiciliar(any(), any(LocalDate.class), anyString()))
                 .thenReturn(beneficiario);
 
         mockMvc.perform(post("/beneficiario/1/visita")
-                .param("dataVisita", "2025-03-15T10:30")
+                .param("dataVisita", "2025-03-15")
                 .param("nomeVisitante", "Maria Silva"))
                 .andExpect(status().is3xxRedirection())
                 .andExpect(redirectedUrl("/perfil/1"))
@@ -175,7 +176,7 @@ class ViewControllerTest {
         when(beneficiarioService.buscarPorId("1")).thenThrow(new RuntimeException("Beneficiário não encontrado"));
 
         mockMvc.perform(post("/beneficiario/1/visita")
-                .param("dataVisita", "2025-03-15T10:30")
+                .param("dataVisita", "2025-03-15")
                 .param("nomeVisitante", "Maria Silva"))
                 .andExpect(status().is3xxRedirection())
                 .andExpect(redirectedUrl("/perfil/1"))

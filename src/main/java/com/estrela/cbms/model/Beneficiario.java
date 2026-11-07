@@ -59,7 +59,7 @@ public class Beneficiario {
     @JsonProperty("motivo_inativacao")
     private String motivoInativacao;
 
-    private List<Doacoes> doacoes;
+    private List<Doacao> doacoes;
 
     private List<VisitaDomiciliar> visitasDomiciliares;
 }

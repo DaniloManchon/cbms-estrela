@@ -42,7 +42,7 @@ cbms-estrela/
 │   ├── model/                          # Entidades MongoDB
 │   │   ├── Beneficiario.java          # Entidade principal (documento)
 │   │   ├── Coleta.java                # Registro de coleta (cestas básicas)
-│   │   ├── Doacoes.java               # Registro de doação
+│   │   ├── Doacao.java               # Registro de doação
 │   │   ├── Renda.java                 # Dados de renda familiar
 │   │   ├── Moradia.java               # Dados de habitação
 │   │   ├── EducacaoBens.java          # Educação e bens duráveis
@@ -133,7 +133,7 @@ public class Beneficiario {
     
     // Históricos (NUNCA são sobrescritos em edições)
     List<Coleta> coletas;               // Histórico de cestas retiradas
-    List<Doacoes> doacoes;              // Histórico de doações recebidas
+    List<Doacao> doacoes;              // Histórico de doações recebidas
     List<IdentificacaoFamiliar> identificacaoFamiliar;
 }
 ```
@@ -145,9 +145,9 @@ public class Coleta {
 }
 ```
 
-### Doacoes
+### Doacao
 ```java
-public class Doacoes {
+public class Doacao {
     LocalDateTime dataDoacao;           // Data/hora da doação
     String descricaoDoacao;             // O que foi doado
 }
@@ -164,6 +164,12 @@ public class Doacoes {
 4. **Controller:** Roteamento HTTP e renderização de views
 5. **View:** Templates Thymeleaf
 
+### Nomes
+- **Classes de registro no singular:** `Coleta`, `Doacao`, `VisitaDomiciliar`. As listas do `Beneficiario` ficam no plural: `coletas`, `doacoes`, `visitasDomiciliares`
+- **Domínio em português:** entidades, campos e métodos de negócio (`registrarDoacao`, `buscarPorId`)
+- **Termos técnicos em inglês:** `Repository`, `Service`, `Controller`, `Mockito`. Os métodos do repositório seguem o Spring Data (`findByCpf`), porque o nome precisa bater com o campo da entidade
+- **Comentários em português**, apenas quando explicam o que não é óbvio no código
+
 ### Métodos de Serviço
 - **`criarBeneficiario()`** - Novo beneficiário com validações e geração de código de barras
 - **`atualizarBeneficiario()`** - Edição com preservação garantida de coletas/doações
@@ -179,10 +185,10 @@ public class Doacoes {
 ### Método Auxiliar Importante
 - **`inicializarObjetosAninhados(beneficiario)`** - Garante que nenhum objeto/lista seja nulo
   - Previne `NullPointerException` na renderização
-  - Inicializa `Renda`, `Moradia`, `EducacaoBens`, `Coletas`, `Doacoes`, etc
+  - Inicializa `Renda`, `Moradia`, `EducacaoBens`, `Coletas`, `Doacao`, etc
   - Usado em `buscarPorId()` e `novoBeneficiario()`
 
-- **`ordenarColetasEDoacoes(beneficiario)`** - Ordena coletas e doações por data decrescente
+- **`numerarEOrdenarHistoricos(beneficiario)`** - Ordena coletas e doações por data decrescente
   - Usado em: `listarTodos()`, `buscar()`, `buscarPorId()`, `deletarColeta()`, `deletarDoacao()`
 
 ### Endpoints HTTP
@@ -214,7 +220,7 @@ public class Doacoes {
 
 ### Importante
 - **NUNCA** logica de negócio no controller
-- **SEMPRE** ordene listas de coletas/doações após buscar do DB (usa `ordenarColetasEDoacoes()`)
+- **SEMPRE** ordene listas de coletas/doações após buscar do DB (usa `numerarEOrdenarHistoricos()`)
 - **SEMPRE** use `inicializarObjetosAninhados()` ao retornar beneficiário para renderizar
 - **SEMPRE** preserve dados críticos (coletas, doações) ao fazer update
 - **SEMPRE** adicione testes para novos métodos
@@ -227,12 +233,12 @@ public class Doacoes {
 
 1. **Leia primeiro o contexto relevante:**
    - Se mexendo com beneficiários: leia a entidade `Beneficiario.java`
-   - Se mexendo com coletas/doações: leia `Coleta.java` e `Doacoes.java`
+   - Se mexendo com coletas/doações: leia `Coleta.java` e `Doacao.java`
    - Se mexendo com validação: veja o `BeneficiarioService.java`
 
 2. **Ao adicionar funcionalidade:**
    - Siga o padrão Model → Repository → Service → Controller → View
-   - Use o método `ordenarColetasEDoacoes()` quando listar/buscar beneficiários
+   - Use o método `numerarEOrdenarHistoricos()` quando listar/buscar beneficiários
    - Sempre inicialize objetos com `inicializarObjetosAninhados()`
    - Nunca sobrescreva listas de coletas/doações em updates
 

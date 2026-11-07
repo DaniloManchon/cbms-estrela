@@ -5,13 +5,18 @@ import com.estrela.cbms.repository.BeneficiarioRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.List;
 import java.util.Optional;
+import java.util.function.BiConsumer;
 
 @Service
 public class BeneficiarioService {
+
+    private static final Comparator<Long> ID_NULOS_POR_ULTIMO = Comparator.nullsLast(Comparator.naturalOrder());
 
     @Autowired
     private BeneficiarioRepository beneficiarioRepository;
@@ -87,26 +92,29 @@ public class BeneficiarioService {
         }
 
         beneficiario.getColetas().add(new Coleta(LocalDateTime.now()));
+        numerarEOrdenarHistoricos(beneficiario);
         return beneficiarioRepository.save(beneficiario);
     }
 
-    public Beneficiario registrarDoacao(Beneficiario beneficiario, LocalDateTime dataDoacao, String descricaoDoacao) {
+    public Beneficiario registrarDoacao(Beneficiario beneficiario, LocalDate dataDoacao, String descricaoDoacao) {
         // Inicializa a lista de doações se for nula
         if (beneficiario.getDoacoes() == null) {
             beneficiario.setDoacoes(new ArrayList<>());
         }
 
-        beneficiario.getDoacoes().add(new Doacoes(dataDoacao, descricaoDoacao));
+        beneficiario.getDoacoes().add(new Doacao(dataDoacao, descricaoDoacao));
+        numerarEOrdenarHistoricos(beneficiario);
         return beneficiarioRepository.save(beneficiario);
     }
 
-    public Beneficiario registrarVisitaDomiciliar(Beneficiario beneficiario, LocalDateTime dataVisita, String nomeVisitante) {
+    public Beneficiario registrarVisitaDomiciliar(Beneficiario beneficiario, LocalDate dataVisita, String nomeVisitante) {
         // Inicializa a lista de visitas domiciliares se for nula
         if (beneficiario.getVisitasDomiciliares() == null) {
             beneficiario.setVisitasDomiciliares(new ArrayList<>());
         }
 
         beneficiario.getVisitasDomiciliares().add(new VisitaDomiciliar(dataVisita, nomeVisitante));
+        numerarEOrdenarHistoricos(beneficiario);
         return beneficiarioRepository.save(beneficiario);
     }
 
@@ -118,13 +126,14 @@ public class BeneficiarioService {
             throw new RuntimeException("Nenhuma coleta para deletar.");
         }
 
-        ordenarColetasEDoacoes(beneficiario);
+        numerarEOrdenarHistoricos(beneficiario);
 
         if (indice < 0 || indice >= beneficiario.getColetas().size()) {
             throw new RuntimeException("Índice de coleta inválido.");
         }
 
         beneficiario.getColetas().remove(indice);
+        numerarEOrdenarHistoricos(beneficiario);
         beneficiarioRepository.save(beneficiario);
     }
 
@@ -136,13 +145,14 @@ public class BeneficiarioService {
             throw new RuntimeException("Nenhuma doação para deletar.");
         }
 
-        ordenarColetasEDoacoes(beneficiario);
+        numerarEOrdenarHistoricos(beneficiario);
 
         if (indice < 0 || indice >= beneficiario.getDoacoes().size()) {
             throw new RuntimeException("Índice de doação inválido.");
         }
 
         beneficiario.getDoacoes().remove(indice);
+        numerarEOrdenarHistoricos(beneficiario);
         beneficiarioRepository.save(beneficiario);
     }
 
@@ -154,31 +164,50 @@ public class BeneficiarioService {
             throw new RuntimeException("Nenhuma visita domiciliar para deletar.");
         }
 
-        ordenarColetasEDoacoes(beneficiario);
+        numerarEOrdenarHistoricos(beneficiario);
 
         if (indice < 0 || indice >= beneficiario.getVisitasDomiciliares().size()) {
             throw new RuntimeException("Índice de visita domiciliar inválido.");
         }
 
         beneficiario.getVisitasDomiciliares().remove(indice);
+        numerarEOrdenarHistoricos(beneficiario);
         beneficiarioRepository.save(beneficiario);
     }
 
-    private void ordenarColetasEDoacoes(Beneficiario beneficiario) {
+    // Numera os registros pela ordem cronológica (id 1 = mais antigo) e exibe do mais recente para o mais antigo
+    private void numerarEOrdenarHistoricos(Beneficiario beneficiario) {
         if (beneficiario.getColetas() != null) {
-            beneficiario.getColetas().sort((c1, c2) -> c2.getDataColeta().compareTo(c1.getDataColeta()));
+            numerarPorOrdemCronologica(beneficiario.getColetas(),
+                    Comparator.comparing(Coleta::getDataColeta).thenComparing(Coleta::getId, ID_NULOS_POR_ULTIMO),
+                    Coleta::setId);
+            beneficiario.getColetas().sort(Comparator.comparing(Coleta::getId, Comparator.reverseOrder()));
         }
         if (beneficiario.getDoacoes() != null) {
-            beneficiario.getDoacoes().sort((d1, d2) -> d2.getDataDoacao().compareTo(d1.getDataDoacao()));
+            numerarPorOrdemCronologica(beneficiario.getDoacoes(),
+                    Comparator.comparing(Doacao::getDataDoacao).thenComparing(Doacao::getId, ID_NULOS_POR_ULTIMO),
+                    Doacao::setId);
+            beneficiario.getDoacoes().sort(Comparator.comparing(Doacao::getId, Comparator.reverseOrder()));
         }
         if (beneficiario.getVisitasDomiciliares() != null) {
-            beneficiario.getVisitasDomiciliares().sort((v1, v2) -> v2.getDataVisita().compareTo(v1.getDataVisita()));
+            numerarPorOrdemCronologica(beneficiario.getVisitasDomiciliares(),
+                    Comparator.comparing(VisitaDomiciliar::getDataVisita).thenComparing(VisitaDomiciliar::getId, ID_NULOS_POR_ULTIMO),
+                    VisitaDomiciliar::setId);
+            beneficiario.getVisitasDomiciliares().sort(Comparator.comparing(VisitaDomiciliar::getId, Comparator.reverseOrder()));
+        }
+    }
+
+    // Registros com a mesma data mantêm a ordem em que foram registrados (desempate pelo id anterior)
+    private static <T> void numerarPorOrdemCronologica(List<T> itens, Comparator<T> cronologico, BiConsumer<T, Long> definirId) {
+        List<T> ordenados = itens.stream().sorted(cronologico).toList();
+        for (int i = 0; i < ordenados.size(); i++) {
+            definirId.accept(ordenados.get(i), (long) i + 1);
         }
     }
 
     public List<Beneficiario> listarTodos() {
         List<Beneficiario> beneficiarios = beneficiarioRepository.findAll();
-        beneficiarios.forEach(this::ordenarColetasEDoacoes);
+        beneficiarios.forEach(this::numerarEOrdenarHistoricos);
         return beneficiarios;
     }
 
@@ -195,7 +224,7 @@ public class BeneficiarioService {
         }
 
         List<Beneficiario> beneficiarios = beneficiarioRepository.findByNomeCompletoContainingIgnoreCaseOrCpfContainingOrCodigoBarrasContaining(termo, termo, termo);
-        beneficiarios.forEach(this::ordenarColetasEDoacoes);
+        beneficiarios.forEach(this::numerarEOrdenarHistoricos);
         return beneficiarios;
     }
 
@@ -204,7 +233,7 @@ public class BeneficiarioService {
                 .orElseThrow(() -> new RuntimeException("Beneficiário não encontrado."));
 
         inicializarObjetosAninhados(beneficiario);
-        ordenarColetasEDoacoes(beneficiario);
+        numerarEOrdenarHistoricos(beneficiario);
 
         return beneficiario;
     }
