@@ -156,6 +156,42 @@ public class ViewController {
         return "redirect:/perfil/" + id;
     }
 
+    @PostMapping("/beneficiario/{id}/visita")
+    public String registrarVisitaDomiciliar(@PathVariable String id,
+                                            @RequestParam String dataVisita,
+                                            @RequestParam String nomeVisitante,
+                                            RedirectAttributes redirectAttributes) {
+        try {
+            log.debug("Tentando registrar visita domiciliar para beneficiário: {}", id);
+            DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm");
+            LocalDateTime dataFormatada = LocalDateTime.parse(dataVisita, formatter);
+
+            Beneficiario beneficiario = beneficiarioService.buscarPorId(id);
+            beneficiarioService.registrarVisitaDomiciliar(beneficiario, dataFormatada, nomeVisitante);
+
+            log.debug("Visita domiciliar registrada com sucesso!");
+            redirectAttributes.addFlashAttribute("sucesso", "Visita domiciliar registrada com sucesso!");
+        } catch (Exception e) {
+            log.error("Erro ao registrar visita domiciliar: {}", e.getMessage(), e);
+            redirectAttributes.addFlashAttribute("erro", "Erro ao registrar visita domiciliar: " + e.getMessage());
+        }
+        return "redirect:/perfil/" + id;
+    }
+
+    @PostMapping("/beneficiario/{id}/visita/{indice}/deletar")
+    public String deletarVisitaDomiciliar(@PathVariable String id, @PathVariable int indice, RedirectAttributes redirectAttributes) {
+        try {
+            log.debug("Tentando deletar visita domiciliar no índice {} para beneficiário: {}", indice, id);
+            beneficiarioService.deletarVisitaDomiciliar(id, indice);
+            log.debug("Visita domiciliar deletada com sucesso!");
+            redirectAttributes.addFlashAttribute("sucesso", "Visita domiciliar deletada com sucesso!");
+        } catch (Exception e) {
+            log.error("Erro ao deletar visita domiciliar: {}", e.getMessage(), e);
+            redirectAttributes.addFlashAttribute("erro", "Erro ao deletar visita domiciliar: " + e.getMessage());
+        }
+        return "redirect:/perfil/" + id;
+    }
+
     @PostMapping("/beneficiario/{id}/deletar")
     public String deletarBeneficiario(@PathVariable String id, RedirectAttributes redirectAttributes) {
         try {

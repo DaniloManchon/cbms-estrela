@@ -3,6 +3,7 @@ package com.estrela.cbms.service;
 import com.estrela.cbms.model.Coleta;
 import com.estrela.cbms.model.Beneficiario;
 import com.estrela.cbms.model.Doacoes;
+import com.estrela.cbms.model.VisitaDomiciliar;
 import com.estrela.cbms.repository.BeneficiarioRepository;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
@@ -599,6 +600,143 @@ class BeneficiarioServiceTest {
         });
 
         assertEquals("Nenhuma doação para deletar.", exception.getMessage());
+        verify(beneficiarioRepository, never()).save(any());
+    }
+
+    // ===== TESTES PARA VISITAS DOMICILIARES =====
+
+    @Test
+    @DisplayName("Deve registrar uma nova visita domiciliar para um beneficiário")
+    void registrarVisitaDomiciliarComSucesso() {
+        beneficiario.setVisitasDomiciliares(new ArrayList<>());
+        when(beneficiarioRepository.save(any(Beneficiario.class))).thenAnswer(invocation -> invocation.getArgument(0));
+
+        LocalDateTime dataVisita = LocalDateTime.now();
+        String nomeVisitante = "Maria Silva";
+
+        beneficiarioService.registrarVisitaDomiciliar(beneficiario, dataVisita, nomeVisitante);
+
+        assertNotNull(beneficiario.getVisitasDomiciliares());
+        assertEquals(1, beneficiario.getVisitasDomiciliares().size());
+        assertEquals(dataVisita, beneficiario.getVisitasDomiciliares().get(0).getDataVisita());
+        assertEquals(nomeVisitante, beneficiario.getVisitasDomiciliares().get(0).getNomeVisitante());
+        verify(beneficiarioRepository, times(1)).save(beneficiario);
+    }
+
+    @Test
+    @DisplayName("Deve inicializar lista de visitas domiciliares quando nula ao registrar")
+    void registrarVisitaDomiciliarInicializaListaNula() {
+        beneficiario.setVisitasDomiciliares(null);
+        when(beneficiarioRepository.save(any(Beneficiario.class))).thenAnswer(invocation -> invocation.getArgument(0));
+
+        beneficiarioService.registrarVisitaDomiciliar(beneficiario, LocalDateTime.now(), "João Souza");
+
+        assertNotNull(beneficiario.getVisitasDomiciliares());
+        assertEquals(1, beneficiario.getVisitasDomiciliares().size());
+        verify(beneficiarioRepository, times(1)).save(beneficiario);
+    }
+
+    @Test
+    @DisplayName("Deve preservar visitas domiciliares existentes ao atualizar")
+    void atualizarBeneficiarioPreservandoVisitasDomiciliares() {
+        List<VisitaDomiciliar> visitasExistentes = new ArrayList<>();
+        visitasExistentes.add(new VisitaDomiciliar(LocalDateTime.now().minusDays(5), "Maria Silva"));
+        visitasExistentes.add(new VisitaDomiciliar(LocalDateTime.now().minusDays(1), "João Souza"));
+
+        Beneficiario beneficiarioExistente = new Beneficiario();
+        beneficiarioExistente.setId("1");
+        beneficiarioExistente.setCpf("123.456.789-00");
+        beneficiarioExistente.setVisitasDomiciliares(visitasExistentes);
+
+        Beneficiario paraAtualizar = new Beneficiario();
+        paraAtualizar.setId("1");
+        paraAtualizar.setCpf("123.456.789-00");
+        paraAtualizar.setVisitasDomiciliares(null);
+
+        when(beneficiarioRepository.findById("1")).thenReturn(Optional.of(beneficiarioExistente));
+        when(beneficiarioRepository.save(any(Beneficiario.class))).thenAnswer(invocation -> invocation.getArgument(0));
+
+        Beneficiario atualizado = beneficiarioService.atualizarBeneficiario(paraAtualizar);
+
+        assertEquals(visitasExistentes, atualizado.getVisitasDomiciliares());
+        assertEquals(2, atualizado.getVisitasDomiciliares().size());
+    }
+
+    @Test
+    @DisplayName("Deve ordenar visitas domiciliares da mais recente para a mais antiga ao buscar")
+    void buscarPorIdComVisitasDomiciliaresOrdenadas() {
+        List<VisitaDomiciliar> visitas = new ArrayList<>();
+        visitas.add(new VisitaDomiciliar(LocalDateTime.now().minusDays(3), "Maria Silva"));
+        visitas.add(new VisitaDomiciliar(LocalDateTime.now().minusDays(1), "João Souza"));
+        beneficiario.setVisitasDomiciliares(visitas);
+
+        when(beneficiarioRepository.findById("1")).thenReturn(Optional.of(beneficiario));
+
+        Beneficiario encontrado = beneficiarioService.buscarPorId("1");
+
+        assertTrue(encontrado.getVisitasDomiciliares().get(0).getDataVisita()
+                .isAfter(encontrado.getVisitasDomiciliares().get(1).getDataVisita()));
+    }
+
+    @Test
+    @DisplayName("Deve inicializar lista de visitas domiciliares ao buscar beneficiário sem visitas")
+    void buscarPorIdEInicializarVisitasDomiciliares() {
+        beneficiario.setVisitasDomiciliares(null);
+
+        when(beneficiarioRepository.findById("1")).thenReturn(Optional.of(beneficiario));
+
+        Beneficiario encontrado = beneficiarioService.buscarPorId("1");
+
+        assertNotNull(encontrado.getVisitasDomiciliares());
+        assertTrue(encontrado.getVisitasDomiciliares().isEmpty());
+    }
+
+    @Test
+    @DisplayName("Deve deletar uma visita domiciliar pelo índice")
+    void deletarVisitaDomiciliarComSucesso() {
+        List<VisitaDomiciliar> visitas = new ArrayList<>();
+        visitas.add(new VisitaDomiciliar(LocalDateTime.now().minusDays(3), "Maria Silva"));
+        visitas.add(new VisitaDomiciliar(LocalDateTime.now().minusDays(1), "João Souza"));
+        beneficiario.setVisitasDomiciliares(visitas);
+
+        when(beneficiarioRepository.findById("1")).thenReturn(Optional.of(beneficiario));
+        when(beneficiarioRepository.save(any(Beneficiario.class))).thenAnswer(invocation -> invocation.getArgument(0));
+
+        beneficiarioService.deletarVisitaDomiciliar("1", 0);
+
+        assertEquals(1, beneficiario.getVisitasDomiciliares().size());
+        verify(beneficiarioRepository, times(1)).save(beneficiario);
+    }
+
+    @Test
+    @DisplayName("Deve lançar exceção ao deletar visita domiciliar com índice inválido")
+    void deletarVisitaDomiciliarIndiceInvalido() {
+        List<VisitaDomiciliar> visitas = new ArrayList<>();
+        visitas.add(new VisitaDomiciliar(LocalDateTime.now(), "Maria Silva"));
+        beneficiario.setVisitasDomiciliares(visitas);
+
+        when(beneficiarioRepository.findById("1")).thenReturn(Optional.of(beneficiario));
+
+        RuntimeException exception = assertThrows(RuntimeException.class, () -> {
+            beneficiarioService.deletarVisitaDomiciliar("1", 5);
+        });
+
+        assertEquals("Índice de visita domiciliar inválido.", exception.getMessage());
+        verify(beneficiarioRepository, never()).save(any());
+    }
+
+    @Test
+    @DisplayName("Deve lançar exceção ao deletar visita domiciliar quando não há visitas")
+    void deletarVisitaDomiciliarSemVisitas() {
+        beneficiario.setVisitasDomiciliares(new ArrayList<>());
+
+        when(beneficiarioRepository.findById("1")).thenReturn(Optional.of(beneficiario));
+
+        RuntimeException exception = assertThrows(RuntimeException.class, () -> {
+            beneficiarioService.deletarVisitaDomiciliar("1", 0);
+        });
+
+        assertEquals("Nenhuma visita domiciliar para deletar.", exception.getMessage());
         verify(beneficiarioRepository, never()).save(any());
     }
 }

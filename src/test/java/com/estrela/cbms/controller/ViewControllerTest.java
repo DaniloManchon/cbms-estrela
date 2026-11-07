@@ -152,4 +152,54 @@ class ViewControllerTest {
                 .andExpect(flash().attributeExists("erro"));
     }
 
+    @Test
+    @DisplayName("Deve registrar uma visita domiciliar com sucesso")
+    void registrarVisitaDomiciliarComSucesso() throws Exception {
+        Beneficiario beneficiario = criarBeneficiarioMock();
+
+        when(beneficiarioService.buscarPorId("1")).thenReturn(beneficiario);
+        when(beneficiarioService.registrarVisitaDomiciliar(any(), any(LocalDateTime.class), anyString()))
+                .thenReturn(beneficiario);
+
+        mockMvc.perform(post("/beneficiario/1/visita")
+                .param("dataVisita", "2025-03-15T10:30")
+                .param("nomeVisitante", "Maria Silva"))
+                .andExpect(status().is3xxRedirection())
+                .andExpect(redirectedUrl("/perfil/1"))
+                .andExpect(flash().attributeExists("sucesso"));
+    }
+
+    @Test
+    @DisplayName("Deve tratar erro ao registrar visita domiciliar")
+    void registrarVisitaDomiciliarComErro() throws Exception {
+        when(beneficiarioService.buscarPorId("1")).thenThrow(new RuntimeException("Beneficiário não encontrado"));
+
+        mockMvc.perform(post("/beneficiario/1/visita")
+                .param("dataVisita", "2025-03-15T10:30")
+                .param("nomeVisitante", "Maria Silva"))
+                .andExpect(status().is3xxRedirection())
+                .andExpect(redirectedUrl("/perfil/1"))
+                .andExpect(flash().attributeExists("erro"));
+    }
+
+    @Test
+    @DisplayName("Deve deletar uma visita domiciliar com sucesso")
+    void deletarVisitaDomiciliarComSucesso() throws Exception {
+        mockMvc.perform(post("/beneficiario/1/visita/0/deletar"))
+                .andExpect(status().is3xxRedirection())
+                .andExpect(redirectedUrl("/perfil/1"))
+                .andExpect(flash().attributeExists("sucesso"));
+    }
+
+    @Test
+    @DisplayName("Deve tratar erro ao deletar visita domiciliar")
+    void deletarVisitaDomiciliarComErro() throws Exception {
+        doThrow(new RuntimeException("Índice inválido")).when(beneficiarioService).deletarVisitaDomiciliar("1", 0);
+
+        mockMvc.perform(post("/beneficiario/1/visita/0/deletar"))
+                .andExpect(status().is3xxRedirection())
+                .andExpect(redirectedUrl("/perfil/1"))
+                .andExpect(flash().attributeExists("erro"));
+    }
+
 }
