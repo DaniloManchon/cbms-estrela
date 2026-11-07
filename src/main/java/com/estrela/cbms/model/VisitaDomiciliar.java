@@ -5,7 +5,7 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 
-import java.time.LocalDateTime;
+import java.time.LocalDate;
 
 @Getter
 @Setter
@@ -13,7 +13,13 @@ import java.time.LocalDateTime;
 @AllArgsConstructor
 public class VisitaDomiciliar {
 
-    private LocalDateTime dataVisita;
+    private Long id;
+    private LocalDate dataVisita;
     private String nomeVisitante;
+
+    public VisitaDomiciliar(LocalDate dataVisita, String nomeVisitante) {
+        this.dataVisita = dataVisita;
+        this.nomeVisitante = nomeVisitante;
+    }
 
 }

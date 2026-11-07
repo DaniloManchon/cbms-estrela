@@ -139,7 +139,7 @@
                                 <div class="flex-grow-1">
                                     <p class="mb-1">
                                         <i class="bi bi-calendar2 text-primary"></i>
-                                        <span class="fw-medium" th:text="${#temporals.format(doacao.dataDoacao, 'dd/MM/yyyy HH:mm')}"></span>
+                                        <span class="fw-medium" th:text="${#temporals.format(doacao.dataDoacao, 'dd/MM/yyyy')}"></span>
                                     </p>
                                     <p class="mb-0 small text-muted" th:text="${doacao.descricaoDoacao}"></p>
                                 </div>
@@ -164,7 +164,7 @@
                         <form th:action="@{'/beneficiario/' + ${beneficiario.id} + '/doacao'}" method="post" class="border p-3 rounded">
                             <div class="mb-3">
                                 <label for="dataDoacao" class="form-label">Data da Doação</label>
-                                <input type="datetime-local" class="form-control" id="dataDoacao" name="dataDoacao" required>
+                                <input type="date" class="form-control" id="dataDoacao" name="dataDoacao" required>
                             </div>
                             <div class="mb-3">
                                 <label for="descricaoDoacao" class="form-label">Descrição da Doação</label>
@@ -193,7 +193,7 @@
                                 <div class="flex-grow-1">
                                     <p class="mb-1">
                                         <i class="bi bi-calendar2 text-primary"></i>
-                                        <span class="fw-medium" th:text="${#temporals.format(visita.dataVisita, 'dd/MM/yyyy HH:mm')}"></span>
+                                        <span class="fw-medium" th:text="${#temporals.format(visita.dataVisita, 'dd/MM/yyyy')}"></span>
                                     </p>
                                     <p class="mb-0 small text-muted">
                                         <i class="bi bi-person"></i>
@@ -221,7 +221,7 @@
                         <form th:action="@{'/beneficiario/' + ${beneficiario.id} + '/visita'}" method="post" class="border p-3 rounded">
                             <div class="mb-3">
                                 <label for="dataVisita" class="form-label">Data da Visita</label>
-                                <input type="datetime-local" class="form-control" id="dataVisita" name="dataVisita" required>
+                                <input type="date" class="form-control" id="dataVisita" name="dataVisita" required>
                             </div>
                             <div class="mb-3">
                                 <label for="nomeVisitante" class="form-label">Nome do Visitante</label>

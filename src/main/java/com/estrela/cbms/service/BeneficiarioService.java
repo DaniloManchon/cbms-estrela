@@ -5,13 +5,18 @@ import com.estrela.cbms.repository.BeneficiarioRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.List;
 import java.util.Optional;
+import java.util.function.BiConsumer;
 
 @Service
 public class BeneficiarioService {
+
+    private static final Comparator<Long> ID_NULOS_POR_ULTIMO = Comparator.nullsLast(Comparator.naturalOrder());
 
     @Autowired
     private BeneficiarioRepository beneficiarioRepository;
@@ -87,26 +92,29 @@ public class BeneficiarioService {
         }
 
         beneficiario.getColetas().add(new Coleta(LocalDateTime.now()));
+        ordenarColetasEDoacoes(beneficiario);
         return beneficiarioRepository.save(beneficiario);
     }
 
-    public Beneficiario registrarDoacao(Beneficiario beneficiario, LocalDateTime dataDoacao, String descricaoDoacao) {
+    public Beneficiario registrarDoacao(Beneficiario beneficiario, LocalDate dataDoacao, String descricaoDoacao) {
         // Inicializa a lista de doações se for nula
         if (beneficiario.getDoacoes() == null) {
             beneficiario.setDoacoes(new ArrayList<>());
         }
 
         beneficiario.getDoacoes().add(new Doacoes(dataDoacao, descricaoDoacao));
+        ordenarColetasEDoacoes(beneficiario);
         return beneficiarioRepository.save(beneficiario);
     }
 
-    public Beneficiario registrarVisitaDomiciliar(Beneficiario beneficiario, LocalDateTime dataVisita, String nomeVisitante) {
+    public Beneficiario registrarVisitaDomiciliar(Beneficiario beneficiario, LocalDate dataVisita, String nomeVisitante) {
         // Inicializa a lista de visitas domiciliares se for nula
         if (beneficiario.getVisitasDomiciliares() == null) {
             beneficiario.setVisitasDomiciliares(new ArrayList<>());
         }
 
         beneficiario.getVisitasDomiciliares().add(new VisitaDomiciliar(dataVisita, nomeVisitante));
+        ordenarColetasEDoacoes(beneficiario);
         return beneficiarioRepository.save(beneficiario);
     }
 
@@ -125,6 +133,7 @@ public class BeneficiarioService {
         }
 
         beneficiario.getColetas().remove(indice);
+        ordenarColetasEDoacoes(beneficiario);
         beneficiarioRepository.save(beneficiario);
     }
 
@@ -143,6 +152,7 @@ public class BeneficiarioService {
         }
 
         beneficiario.getDoacoes().remove(indice);
+        ordenarColetasEDoacoes(beneficiario);
         beneficiarioRepository.save(beneficiario);
     }
 
@@ -161,18 +171,37 @@ public class BeneficiarioService {
         }
 
         beneficiario.getVisitasDomiciliares().remove(indice);
+        ordenarColetasEDoacoes(beneficiario);
         beneficiarioRepository.save(beneficiario);
     }
 
+    // Numera os registros pela ordem cronológica (id 1 = mais antigo) e exibe do mais recente para o mais antigo
     private void ordenarColetasEDoacoes(Beneficiario beneficiario) {
         if (beneficiario.getColetas() != null) {
-            beneficiario.getColetas().sort((c1, c2) -> c2.getDataColeta().compareTo(c1.getDataColeta()));
+            numerarPorOrdemCronologica(beneficiario.getColetas(),
+                    Comparator.comparing(Coleta::getDataColeta).thenComparing(Coleta::getId, ID_NULOS_POR_ULTIMO),
+                    Coleta::setId);
+            beneficiario.getColetas().sort(Comparator.comparing(Coleta::getId, Comparator.reverseOrder()));
         }
         if (beneficiario.getDoacoes() != null) {
-            beneficiario.getDoacoes().sort((d1, d2) -> d2.getDataDoacao().compareTo(d1.getDataDoacao()));
+            numerarPorOrdemCronologica(beneficiario.getDoacoes(),
+                    Comparator.comparing(Doacoes::getDataDoacao).thenComparing(Doacoes::getId, ID_NULOS_POR_ULTIMO),
+                    Doacoes::setId);
+            beneficiario.getDoacoes().sort(Comparator.comparing(Doacoes::getId, Comparator.reverseOrder()));
         }
         if (beneficiario.getVisitasDomiciliares() != null) {
-            beneficiario.getVisitasDomiciliares().sort((v1, v2) -> v2.getDataVisita().compareTo(v1.getDataVisita()));
+            numerarPorOrdemCronologica(beneficiario.getVisitasDomiciliares(),
+                    Comparator.comparing(VisitaDomiciliar::getDataVisita).thenComparing(VisitaDomiciliar::getId, ID_NULOS_POR_ULTIMO),
+                    VisitaDomiciliar::setId);
+            beneficiario.getVisitasDomiciliares().sort(Comparator.comparing(VisitaDomiciliar::getId, Comparator.reverseOrder()));
+        }
+    }
+
+    // Registros com a mesma data mantêm a ordem em que foram registrados (desempate pelo id anterior)
+    private static <T> void numerarPorOrdemCronologica(List<T> itens, Comparator<T> cronologico, BiConsumer<T, Long> definirId) {
+        List<T> ordenados = itens.stream().sorted(cronologico).toList();
+        for (int i = 0; i < ordenados.size(); i++) {
+            definirId.accept(ordenados.get(i), (long) i + 1);
         }
     }
 

@@ -14,8 +14,7 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 import jakarta.validation.Valid;
 import org.springframework.validation.BindingResult;
-import java.time.LocalDateTime;
-import java.time.format.DateTimeFormatter;
+import java.time.LocalDate;
 import java.util.List;
 import java.util.Optional;
 
@@ -113,8 +112,7 @@ public class ViewController {
                                    RedirectAttributes redirectAttributes) {
         try {
             log.debug("Tentando registrar doação para beneficiário: {}", id);
-            DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm");
-            LocalDateTime dataFormatada = LocalDateTime.parse(dataDoacao, formatter);
+            LocalDate dataFormatada = LocalDate.parse(dataDoacao);
 
             Beneficiario beneficiario = beneficiarioService.buscarPorId(id);
             beneficiarioService.registrarDoacao(beneficiario, dataFormatada, descricaoDoacao);
@@ -163,8 +161,7 @@ public class ViewController {
                                             RedirectAttributes redirectAttributes) {
         try {
             log.debug("Tentando registrar visita domiciliar para beneficiário: {}", id);
-            DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm");
-            LocalDateTime dataFormatada = LocalDateTime.parse(dataVisita, formatter);
+            LocalDate dataFormatada = LocalDate.parse(dataVisita);
 
             Beneficiario beneficiario = beneficiarioService.buscarPorId(id);
             beneficiarioService.registrarVisitaDomiciliar(beneficiario, dataFormatada, nomeVisitante);

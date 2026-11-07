@@ -5,7 +5,7 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 
-import java.time.LocalDateTime;
+import java.time.LocalDate;
 
 @Getter
 @Setter
@@ -13,7 +13,13 @@ import java.time.LocalDateTime;
 @AllArgsConstructor
 public class Doacoes {
 
-    private LocalDateTime dataDoacao;
+    private Long id;
+    private LocalDate dataDoacao;
     private String descricaoDoacao;
+
+    public Doacoes(LocalDate dataDoacao, String descricaoDoacao) {
+        this.dataDoacao = dataDoacao;
+        this.descricaoDoacao = descricaoDoacao;
+    }
 
 }

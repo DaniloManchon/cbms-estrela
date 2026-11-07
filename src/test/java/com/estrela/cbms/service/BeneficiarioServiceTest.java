@@ -13,6 +13,7 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
@@ -382,7 +383,7 @@ class BeneficiarioServiceTest {
         beneficiario.setDoacoes(new ArrayList<>());
         when(beneficiarioRepository.save(any(Beneficiario.class))).thenAnswer(invocation -> invocation.getArgument(0));
 
-        LocalDateTime dataDoacao = LocalDateTime.now();
+        LocalDate dataDoacao = LocalDate.now();
         String descricaoDoacao = "Alimentos básicos";
 
         beneficiarioService.registrarDoacao(beneficiario, dataDoacao, descricaoDoacao);
@@ -400,7 +401,7 @@ class BeneficiarioServiceTest {
         beneficiario.setDoacoes(null);
         when(beneficiarioRepository.save(any(Beneficiario.class))).thenAnswer(invocation -> invocation.getArgument(0));
 
-        LocalDateTime dataDoacao = LocalDateTime.now();
+        LocalDate dataDoacao = LocalDate.now();
         beneficiarioService.registrarDoacao(beneficiario, dataDoacao, "Doação de roupas");
 
         assertNotNull(beneficiario.getDoacoes());
@@ -412,8 +413,8 @@ class BeneficiarioServiceTest {
     @DisplayName("Deve preservar doações ao atualizar beneficiário")
     void atualizarBeneficiarioPreservandoDoacoes() {
         List<Doacoes> doacoesExistentes = new ArrayList<>();
-        doacoesExistentes.add(new Doacoes(LocalDateTime.now().minusDays(5), "Alimentos"));
-        doacoesExistentes.add(new Doacoes(LocalDateTime.now().minusDays(1), "Roupas"));
+        doacoesExistentes.add(new Doacoes(LocalDate.now().minusDays(5), "Alimentos"));
+        doacoesExistentes.add(new Doacoes(LocalDate.now().minusDays(1), "Roupas"));
 
         Beneficiario beneficiarioExistente = new Beneficiario();
         beneficiarioExistente.setId("1");
@@ -445,9 +446,9 @@ class BeneficiarioServiceTest {
         ben1.setId("1");
         ben1.setNomeCompleto("João");
         List<Doacoes> doacoes1 = new ArrayList<>();
-        doacoes1.add(new Doacoes(LocalDateTime.now().minusDays(5), "Alimentos"));
-        doacoes1.add(new Doacoes(LocalDateTime.now().minusDays(1), "Roupas"));
-        doacoes1.add(new Doacoes(LocalDateTime.now().minusDays(10), "Eletrônicos"));
+        doacoes1.add(new Doacoes(LocalDate.now().minusDays(5), "Alimentos"));
+        doacoes1.add(new Doacoes(LocalDate.now().minusDays(1), "Roupas"));
+        doacoes1.add(new Doacoes(LocalDate.now().minusDays(10), "Eletrônicos"));
         ben1.setDoacoes(doacoes1);
 
         when(beneficiarioRepository.findAll()).thenReturn(List.of(ben1));
@@ -471,8 +472,8 @@ class BeneficiarioServiceTest {
         ben1.setId("1");
         ben1.setNomeCompleto("João");
         List<Doacoes> doacoes1 = new ArrayList<>();
-        doacoes1.add(new Doacoes(LocalDateTime.now().minusDays(3), "Alimentos"));
-        doacoes1.add(new Doacoes(LocalDateTime.now().minusDays(1), "Roupas"));
+        doacoes1.add(new Doacoes(LocalDate.now().minusDays(3), "Alimentos"));
+        doacoes1.add(new Doacoes(LocalDate.now().minusDays(1), "Roupas"));
         ben1.setDoacoes(doacoes1);
 
         when(beneficiarioRepository.findByNomeCompletoContainingIgnoreCaseOrCpfContainingOrCodigoBarrasContaining("João","João","João"))
@@ -558,8 +559,8 @@ class BeneficiarioServiceTest {
     @DisplayName("Deve deletar uma doação pelo índice")
     void deletarDoacaoComSucesso() {
         List<Doacoes> doacoes = new ArrayList<>();
-        doacoes.add(new Doacoes(LocalDateTime.now().minusDays(3), "Alimentos"));
-        doacoes.add(new Doacoes(LocalDateTime.now().minusDays(1), "Roupas"));
+        doacoes.add(new Doacoes(LocalDate.now().minusDays(3), "Alimentos"));
+        doacoes.add(new Doacoes(LocalDate.now().minusDays(1), "Roupas"));
         beneficiario.setDoacoes(doacoes);
 
         when(beneficiarioRepository.findById("1")).thenReturn(Optional.of(beneficiario));
@@ -575,7 +576,7 @@ class BeneficiarioServiceTest {
     @DisplayName("Deve lançar exceção ao deletar doação com índice inválido")
     void deletarDoacaoIndiceInvalido() {
         List<Doacoes> doacoes = new ArrayList<>();
-        doacoes.add(new Doacoes(LocalDateTime.now(), "Alimentos"));
+        doacoes.add(new Doacoes(LocalDate.now(), "Alimentos"));
         beneficiario.setDoacoes(doacoes);
 
         when(beneficiarioRepository.findById("1")).thenReturn(Optional.of(beneficiario));
@@ -611,7 +612,7 @@ class BeneficiarioServiceTest {
         beneficiario.setVisitasDomiciliares(new ArrayList<>());
         when(beneficiarioRepository.save(any(Beneficiario.class))).thenAnswer(invocation -> invocation.getArgument(0));
 
-        LocalDateTime dataVisita = LocalDateTime.now();
+        LocalDate dataVisita = LocalDate.now();
         String nomeVisitante = "Maria Silva";
 
         beneficiarioService.registrarVisitaDomiciliar(beneficiario, dataVisita, nomeVisitante);
@@ -629,7 +630,7 @@ class BeneficiarioServiceTest {
         beneficiario.setVisitasDomiciliares(null);
         when(beneficiarioRepository.save(any(Beneficiario.class))).thenAnswer(invocation -> invocation.getArgument(0));
 
-        beneficiarioService.registrarVisitaDomiciliar(beneficiario, LocalDateTime.now(), "João Souza");
+        beneficiarioService.registrarVisitaDomiciliar(beneficiario, LocalDate.now(), "João Souza");
 
         assertNotNull(beneficiario.getVisitasDomiciliares());
         assertEquals(1, beneficiario.getVisitasDomiciliares().size());
@@ -640,8 +641,8 @@ class BeneficiarioServiceTest {
     @DisplayName("Deve preservar visitas domiciliares existentes ao atualizar")
     void atualizarBeneficiarioPreservandoVisitasDomiciliares() {
         List<VisitaDomiciliar> visitasExistentes = new ArrayList<>();
-        visitasExistentes.add(new VisitaDomiciliar(LocalDateTime.now().minusDays(5), "Maria Silva"));
-        visitasExistentes.add(new VisitaDomiciliar(LocalDateTime.now().minusDays(1), "João Souza"));
+        visitasExistentes.add(new VisitaDomiciliar(LocalDate.now().minusDays(5), "Maria Silva"));
+        visitasExistentes.add(new VisitaDomiciliar(LocalDate.now().minusDays(1), "João Souza"));
 
         Beneficiario beneficiarioExistente = new Beneficiario();
         beneficiarioExistente.setId("1");
@@ -666,8 +667,8 @@ class BeneficiarioServiceTest {
     @DisplayName("Deve ordenar visitas domiciliares da mais recente para a mais antiga ao buscar")
     void buscarPorIdComVisitasDomiciliaresOrdenadas() {
         List<VisitaDomiciliar> visitas = new ArrayList<>();
-        visitas.add(new VisitaDomiciliar(LocalDateTime.now().minusDays(3), "Maria Silva"));
-        visitas.add(new VisitaDomiciliar(LocalDateTime.now().minusDays(1), "João Souza"));
+        visitas.add(new VisitaDomiciliar(LocalDate.now().minusDays(3), "Maria Silva"));
+        visitas.add(new VisitaDomiciliar(LocalDate.now().minusDays(1), "João Souza"));
         beneficiario.setVisitasDomiciliares(visitas);
 
         when(beneficiarioRepository.findById("1")).thenReturn(Optional.of(beneficiario));
@@ -695,8 +696,8 @@ class BeneficiarioServiceTest {
     @DisplayName("Deve deletar uma visita domiciliar pelo índice")
     void deletarVisitaDomiciliarComSucesso() {
         List<VisitaDomiciliar> visitas = new ArrayList<>();
-        visitas.add(new VisitaDomiciliar(LocalDateTime.now().minusDays(3), "Maria Silva"));
-        visitas.add(new VisitaDomiciliar(LocalDateTime.now().minusDays(1), "João Souza"));
+        visitas.add(new VisitaDomiciliar(LocalDate.now().minusDays(3), "Maria Silva"));
+        visitas.add(new VisitaDomiciliar(LocalDate.now().minusDays(1), "João Souza"));
         beneficiario.setVisitasDomiciliares(visitas);
 
         when(beneficiarioRepository.findById("1")).thenReturn(Optional.of(beneficiario));
@@ -712,7 +713,7 @@ class BeneficiarioServiceTest {
     @DisplayName("Deve lançar exceção ao deletar visita domiciliar com índice inválido")
     void deletarVisitaDomiciliarIndiceInvalido() {
         List<VisitaDomiciliar> visitas = new ArrayList<>();
-        visitas.add(new VisitaDomiciliar(LocalDateTime.now(), "Maria Silva"));
+        visitas.add(new VisitaDomiciliar(LocalDate.now(), "Maria Silva"));
         beneficiario.setVisitasDomiciliares(visitas);
 
         when(beneficiarioRepository.findById("1")).thenReturn(Optional.of(beneficiario));
@@ -738,5 +739,61 @@ class BeneficiarioServiceTest {
 
         assertEquals("Nenhuma visita domiciliar para deletar.", exception.getMessage());
         verify(beneficiarioRepository, never()).save(any());
+    }
+
+    // ===== TESTES PARA IDS SEQUENCIAIS DOS REGISTROS =====
+
+    @Test
+    @DisplayName("Deve gerar id maior que o último existente ao registrar doação")
+    void registrarDoacaoGeraIdCrescente() {
+        Doacoes primeira = new Doacoes(LocalDate.now().minusDays(2), "Alimentos");
+        primeira.setId(1L);
+        Doacoes segunda = new Doacoes(LocalDate.now().minusDays(1), "Roupas");
+        segunda.setId(2L);
+        beneficiario.setDoacoes(new ArrayList<>(List.of(primeira, segunda)));
+        when(beneficiarioRepository.save(any(Beneficiario.class))).thenAnswer(invocation -> invocation.getArgument(0));
+
+        beneficiarioService.registrarDoacao(beneficiario, LocalDate.now(), "Eletrônicos");
+
+        assertEquals(3L, beneficiario.getDoacoes().get(0).getId());
+    }
+
+    @Test
+    @DisplayName("Deve renumerar os ids pela data quando a visita registrada é anterior às existentes")
+    void renumerarVisitasPelaData() {
+        VisitaDomiciliar visitaExistente = new VisitaDomiciliar(LocalDate.now().minusDays(1), "Maria Silva");
+        visitaExistente.setId(1L);
+        beneficiario.setVisitasDomiciliares(new ArrayList<>(List.of(visitaExistente)));
+        when(beneficiarioRepository.findById("1")).thenReturn(Optional.of(beneficiario));
+        when(beneficiarioRepository.save(any(Beneficiario.class))).thenAnswer(invocation -> invocation.getArgument(0));
+
+        beneficiarioService.registrarVisitaDomiciliar(beneficiario, LocalDate.now().minusDays(10), "João Souza");
+        Beneficiario encontrado = beneficiarioService.buscarPorId("1");
+
+        assertEquals("Maria Silva", encontrado.getVisitasDomiciliares().get(0).getNomeVisitante());
+        assertEquals(2L, encontrado.getVisitasDomiciliares().get(0).getId());
+        assertEquals("João Souza", encontrado.getVisitasDomiciliares().get(1).getNomeVisitante());
+        assertEquals(1L, encontrado.getVisitasDomiciliares().get(1).getId());
+    }
+
+    @Test
+    @DisplayName("Deve atribuir ids aos registros antigos em ordem cronológica")
+    void atribuirIdsAosRegistrosAntigos() {
+        beneficiario.setDoacoes(new ArrayList<>(List.of(
+                new Doacoes(LocalDate.now().minusDays(1), "Roupas"),
+                new Doacoes(LocalDate.now().minusDays(5), "Alimentos"),
+                new Doacoes(LocalDate.now().minusDays(3), "Eletrônicos"))));
+
+        when(beneficiarioRepository.findById("1")).thenReturn(Optional.of(beneficiario));
+
+        Beneficiario encontrado = beneficiarioService.buscarPorId("1");
+
+        List<Doacoes> doacoes = encontrado.getDoacoes();
+        assertEquals("Roupas", doacoes.get(0).getDescricaoDoacao());
+        assertEquals(3L, doacoes.get(0).getId());
+        assertEquals("Eletrônicos", doacoes.get(1).getDescricaoDoacao());
+        assertEquals(2L, doacoes.get(1).getId());
+        assertEquals("Alimentos", doacoes.get(2).getDescricaoDoacao());
+        assertEquals(1L, doacoes.get(2).getId());
     }
 }

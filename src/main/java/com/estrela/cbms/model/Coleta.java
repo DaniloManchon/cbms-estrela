@@ -13,5 +13,10 @@ import java.time.LocalDateTime;
 @AllArgsConstructor
 public class Coleta {
 
+    private Long id;
     private LocalDateTime dataColeta;
+
+    public Coleta(LocalDateTime dataColeta) {
+        this.dataColeta = dataColeta;
+    }
 }
