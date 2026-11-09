@@ -215,7 +215,7 @@ public class BeneficiarioService {
         if (codigoBarras == null || codigoBarras.isBlank()) {
             return Optional.empty();
         }
-        return beneficiarioRepository.findByCodigoBarras(codigoBarras.trim());
+        return beneficiarioRepository.findByCodigoBarrasIgnoreCase(codigoBarras.trim());
     }
 
     public List<Beneficiario> buscar(String termo) {

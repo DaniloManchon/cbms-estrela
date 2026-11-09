@@ -43,6 +43,22 @@ class BeneficiarioServiceTest {
         beneficiario.setCpf("123.456.789-00");
     }
 
+    // ===== TESTES PARA BUSCA POR CÓDIGO DE BARRAS =====
+
+    @Test
+    @DisplayName("Deve buscar por código de barras ignorando maiúsculas e minúsculas")
+    void buscarPorCodigoBarrasIgnoraCaixa() {
+        beneficiario.setCodigoBarras("EST1700000000000");
+        when(beneficiarioRepository.findByCodigoBarrasIgnoreCase("est1700000000000"))
+                .thenReturn(Optional.of(beneficiario));
+
+        Optional<Beneficiario> resultado = beneficiarioService.buscarPorCodigoBarras("est1700000000000");
+
+        assertTrue(resultado.isPresent());
+        assertEquals("1", resultado.get().getId());
+        verify(beneficiarioRepository).findByCodigoBarrasIgnoreCase("est1700000000000");
+    }
+
     // ===== TESTES PARA CRIAR NOVO BENEFICIÁRIO =====
 
     @Test
