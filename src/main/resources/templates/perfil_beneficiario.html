@@ -156,7 +156,7 @@
                         <form th:action="@{'/beneficiario/' + ${beneficiario.id} + '/doacao'}" method="post" class="border p-3 rounded">
                             <div class="mb-3">
                                 <label for="dataDoacao" class="form-label">Data da Doação</label>
-                                <input type="date" class="form-control" id="dataDoacao" name="dataDoacao" required>
+                                <input type="date" class="form-control" id="dataDoacao" name="dataDoacao" th:value="${#temporals.format(#temporals.createToday(), 'yyyy-MM-dd')}" required>
                             </div>
                             <div class="mb-3">
                                 <label for="descricaoDoacao" class="form-label">Descrição da Doação</label>
@@ -209,7 +209,7 @@
                         <form th:action="@{'/beneficiario/' + ${beneficiario.id} + '/visita'}" method="post" class="border p-3 rounded">
                             <div class="mb-3">
                                 <label for="dataVisita" class="form-label">Data da Visita</label>
-                                <input type="date" class="form-control" id="dataVisita" name="dataVisita" required>
+                                <input type="date" class="form-control" id="dataVisita" name="dataVisita" th:value="${#temporals.format(#temporals.createToday(), 'yyyy-MM-dd')}" required>
                             </div>
                             <div class="mb-3">
                                 <label for="nomeVisitante" class="form-label">Nome do Visitante</label>
